@@ -47,4 +47,29 @@ class Book extends Model
             (int)$data['publisher_id']
         ]);
     }
+
+
+    public function update(int $id, array $data): bool
+    {
+        $statement = $this->db->prepare("
+            UPDATE books 
+            SET title = ?, isbn = ?, publication_year = ?, price = ?, stock_quantity = ?, publisher_id = ? 
+            WHERE book_id = ?
+        ");
+        return $statement->execute([
+            $data['title'],
+            $data['isbn'],
+            (int)$data['publication_year'],
+            (float)$data['price'],
+            (int)$data['stock_quantity'],
+            (int)$data['publisher_id'],
+            $id
+        ]);
+    }
+
+    public function delete(int $id): bool
+    {
+        $statement = $this->db->prepare("DELETE FROM books WHERE book_id = ?");
+        return $statement->execute([$id]);
+    }
 }

@@ -6,6 +6,8 @@ use App\Core\Controller;
 
 abstract class AdminController extends Controller
 {
+    protected string $layout = '';
+
     public function __construct()
     {
         if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
