@@ -8,7 +8,43 @@ class Book extends Model
 {
     public function getAll(): array
     {
-        $statement = $this->db->query("SELECT * FROM books ORDER BY book_id DESC");
+        $statement = $this->db->query("
+            SELECT books.*, publishers.publisher_name 
+            FROM books 
+            JOIN publishers ON books.publisher_id = publishers.publisher_id 
+            ORDER BY books.book_id DESC
+        ");
         return $statement->fetchAll();
+    }
+
+    public function getById(int $id): ?array
+    {
+        $statement = $this->db->prepare("
+            SELECT books.*, publishers.publisher_name 
+            FROM books 
+            JOIN publishers ON books.publisher_id = publishers.publisher_id 
+            WHERE books.book_id = ?
+        ");
+        $statement->execute([$id]);
+        $result = $statement->fetch();
+        return $result ?: null;
+    }
+
+
+    public function create(array $data): bool
+    {
+        $statement = $this->db->prepare("
+            INSERT INTO books (title, isbn, publication_year, price, stock_quantity, publisher_id) 
+            VALUES (?, ?, ?, ?, ?, ?)
+        ");
+
+        return $statement->execute([
+            $data['title'],
+            $data['isbn'],
+            (int)$data['publication_year'],
+            (float)$data['price'],
+            (int)$data['stock_quantity'],
+            (int)$data['publisher_id']
+        ]);
     }
 }
