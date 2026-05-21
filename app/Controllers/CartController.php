@@ -123,10 +123,10 @@ class CartController extends Controller
 
         if ($orderModel->saveOrder($customerId, $cartItems, $totalPrice)) {
             unset($_SESSION['cart']);
-
             $this->view('order_success', ['title' => 'Замовлення оформлено!']);
         } else {
-            die("Критична помилка бази даних при оформленні замовлення.");
+            $response = new \App\Core\Response();
+            $response->setStatus(500)->send("<h2>Помилка сервера</h2><p>Не вдалося зберегти замовлення через критичну помилку бази даних. Спробуйте пізніше.</p>");
         }
     }
 }

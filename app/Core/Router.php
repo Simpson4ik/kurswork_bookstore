@@ -39,8 +39,19 @@ class Router
 
     private function abort(): void
     {
-        http_response_code(404);
-        echo "404 - Page Not Found";
-        exit;
+        $response = new \App\Core\Response();
+
+        $html = "
+            <body style='background:#0b0f19; color:#f8fafc; font-family:sans-serif; text-align:center; padding-top:100px;'>
+                <h1 style='color:#38bdf8; font-size:48px;'>404</h1>
+                <h2>Сторінку не знайдено</h2>
+                <p style='color:#94a3b8;'>На жаль, такої сторінки або книги не існує.</p>
+                <a href='/coursework/' style='color:#2563eb; text-decoration:none; font-weight:bold;'>&larr; На головну сторінку</a>
+            body>
+        ";
+
+        $response->setStatus(404)
+            ->addHeader('Content-Type: text/html; charset=utf-8')
+            ->send($html);
     }
 }

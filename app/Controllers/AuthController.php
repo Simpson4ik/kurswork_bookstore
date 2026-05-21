@@ -18,7 +18,8 @@ class AuthController extends Controller
             $customerModel = new Customer();
 
             if ($customerModel->getByEmail($_POST['email'])) {
-                die("Користувач з такою поштою вже існує");
+                $response = new \App\Core\Response();
+                $response->setStatus(400)->send("<h2>Помилка реєстрації</h2><p>Користувач з такою поштою вже існує в системі.</p><p><a href='/coursework/register'>Назад</a></p>");
             }
 
             $customerModel->create($_POST);
@@ -52,8 +53,8 @@ class AuthController extends Controller
                 }
                 exit;
             }
-
-            die("Неправильний email або пароль");
+            $response = new \App\Core\Response();
+            $response->setStatus(401)->send("<h2>Помилка входу</h2><p>Неправильний email або пароль.</p><p><a href='/coursework/login'>Спробувати знову</a></p>");
         }
     }
 

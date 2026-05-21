@@ -13,7 +13,7 @@
     <h1>⚙️ Панель керування магазином</h1>
     <nav>
         <a href="/coursework/">На головну сайту</a>
-        <a href="/coursework/admin/dashboard">📊 Книги (CRUD)</a>
+        <a href="/coursework/admin/dashboard">📊 Книги</a>
         <a href="/coursework/admin/publishers">🏢 Видавництва</a>
         <a href="/coursework/admin/authors">✍️ Автори</a>
         <a href="/coursework/admin/genres">🎭 Жанри</a>

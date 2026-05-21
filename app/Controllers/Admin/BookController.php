@@ -40,8 +40,8 @@ class BookController extends AdminController
         $book = $bookModel->getById((int)$id);
 
         if (!$book) {
-            http_response_code(404);
-            die("Книгу не знайдено");
+            $response = new \App\Core\Response();
+            $response->setStatus(404)->send("<h2>Помилка 404</h2><p>Книгу для редагування з таким ID не знайдено в базі даних.</p><p><a href='/coursework/admin/dashboard'>Назад до панелі</a></p>");
         }
 
         $publisherModel = new Publisher();
