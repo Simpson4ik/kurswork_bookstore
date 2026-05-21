@@ -19,7 +19,9 @@
                 <p>Ціна: <?php echo htmlspecialchars($book['price']); ?> грн</p>
                 <p>В наявності: <?php echo htmlspecialchars($book['stock_quantity']); ?> шт.</p>
                 <a href="/coursework/cart/add/<?php echo $book['book_id']; ?>">
-                    <button type="button">Додати в кошик</button>
+                    <button type="button" class="btn-add-to-cart" data-book-id="<?php echo $book['book_id']; ?>">
+                        Додати в кошик
+                    </button>
                 </a>
             </li>
         <?php endforeach; ?>

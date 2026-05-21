@@ -44,11 +44,10 @@ $router->add('GET', 'admin/book/delete/{id}', [\App\Controllers\Admin\BookContro
 $router->add('GET', 'admin/publishers', [\App\Controllers\Admin\PublisherController::class, 'index']);
 $router->add('POST', 'admin/publishers/store', [\App\Controllers\Admin\PublisherController::class, 'store']);
 $router->add('GET', 'admin/authors', [\App\Controllers\Admin\AuthorController::class, 'index']);
+$router->add('POST', 'register/check-email', [\App\Controllers\AuthController::class, 'checkEmailAjax']);
 $router->add('POST', 'admin/authors/store', [\App\Controllers\Admin\AuthorController::class, 'store']);
 $router->add('GET', 'admin/genres', [\App\Controllers\Admin\GenreController::class, 'index']);
 $router->add('POST', 'admin/genres/store', [\App\Controllers\Admin\GenreController::class, 'store']);
-
-
 
 $router->add('GET', 'cart', [\App\Controllers\CartController::class, 'index']);
 $router->add('GET', 'cart/add/{id}', [\App\Controllers\CartController::class, 'add']);
@@ -56,6 +55,8 @@ $router->add('GET', 'cart/remove/{id}', [\App\Controllers\CartController::class,
 $router->add('POST', 'cart/update', [\App\Controllers\CartController::class, 'update']);
 $router->add('GET', 'cart/checkout', [\App\Controllers\CartController::class, 'checkout']);
 
+$router->add('POST', 'cart/add-ajax', [\App\Controllers\CartController::class, 'addAjax']);
+$router->add('POST', 'cart/update-ajax', [\App\Controllers\CartController::class, 'updateAjax']);
 
 $router->add('GET', 'orders', [\App\Controllers\ProfileController::class, 'orders']);
 

@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $title ?? 'Книжковий інтернет-магазин'; ?></title>
     <link rel="stylesheet" href="/coursework/public/css/style.css?v=3">
+
 </head>
 <body>
 <header>
@@ -41,5 +42,6 @@
         &copy; <?php echo date('Y'); ?> Книжковий інтернет-магазин. Курсова робота.
     </p>
 </footer>
+<script src="/coursework/public/js/app.js?v=1"></script>
 </body>
 </html>
