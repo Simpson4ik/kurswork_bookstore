@@ -33,4 +33,40 @@ class Order extends Model
             return false;
         }
     }
+
+    public function getByCustomerId(int $customerId): array
+    {
+        $statement = $this->db->prepare("
+            SELECT o.order_id, o.total_amount, o.order_date, 
+                   oi.quantity, oi.price, b.title
+            FROM orders o
+            LEFT JOIN order_items oi ON o.order_id = oi.order_id
+            LEFT JOIN books b ON oi.book_id = b.book_id
+            WHERE o.customer_id = ?
+            ORDER BY o.order_id DESC
+        ");
+        $statement->execute([$customerId]);
+        $rows = $statement->fetchAll();
+
+        $orders = [];
+        foreach ($rows as $row) {
+            $orderId = $row['order_id'];
+            if (!isset($orders[$orderId])) {
+                $orders[$orderId] = [
+                    'order_id' => $orderId,
+                    'total_amount' => $row['total_amount'],
+                    'order_date' => $row['order_date'] ?? null,
+                    'items' => []
+                ];
+            }
+            if ($row['title']) {
+                $orders[$orderId]['items'][] = [
+                    'title' => $row['title'],
+                    'quantity' => $row['quantity'],
+                    'price' => $row['price']
+                ];
+            }
+        }
+        return array_values($orders);
+    }
 }

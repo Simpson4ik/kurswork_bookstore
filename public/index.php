@@ -56,6 +56,9 @@ $router->add('GET', 'cart/remove/{id}', [\App\Controllers\CartController::class,
 $router->add('POST', 'cart/update', [\App\Controllers\CartController::class, 'update']);
 $router->add('GET', 'cart/checkout', [\App\Controllers\CartController::class, 'checkout']);
 
+
+$router->add('GET', 'orders', [\App\Controllers\ProfileController::class, 'orders']);
+
 $url = $_GET['url'] ?? '';
 $method = $_SERVER['REQUEST_METHOD'];
 

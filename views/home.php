@@ -13,6 +13,8 @@
                         <?php echo htmlspecialchars($book['title']); ?>
                     </a>
                 </h3>
+                <p><strong>Автор(и):</strong> <?php echo htmlspecialchars($book['authors_list'] ?: 'Не вказано'); ?></p>
+                <p><strong>Жанр(и):</strong> <?php echo htmlspecialchars($book['genres_list'] ?: 'Не вказано'); ?></p>
                 <p>Рік видання: <?php echo htmlspecialchars($book['publication_year']); ?></p>
                 <p>Ціна: <?php echo htmlspecialchars($book['price']); ?> грн</p>
                 <p>В наявності: <?php echo htmlspecialchars($book['stock_quantity']); ?> шт.</p>
@@ -20,7 +22,6 @@
                     <button type="button">Додати в кошик</button>
                 </a>
             </li>
-            <br>
         <?php endforeach; ?>
     </ul>
 <?php else: ?>

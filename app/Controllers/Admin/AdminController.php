@@ -6,7 +6,7 @@ use App\Core\Controller;
 
 abstract class AdminController extends Controller
 {
-    protected string $layout = '';
+    protected string $layout = 'layouts/admin';
 
     public function __construct()
     {

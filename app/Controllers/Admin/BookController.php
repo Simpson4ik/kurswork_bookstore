@@ -4,17 +4,22 @@ namespace App\Controllers\Admin;
 
 use App\Models\Book;
 use App\Models\Publisher;
+use App\Models\Author;
+use App\Models\Genre;
 
 class BookController extends AdminController
 {
     public function create(): void
     {
         $publisherModel = new Publisher();
-        $publishers = $publisherModel->getAll();
+        $authorModel = new Author();
+        $genreModel = new Genre();
 
         $this->view('admin/add_book', [
             'title' => 'Додати нову книгу',
-            'publishers' => $publishers
+            'publishers' => $publisherModel->getAll(),
+            'authors' => $authorModel->getAll(),
+            'genres' => $genreModel->getAll()
         ]);
     }
 
@@ -40,12 +45,17 @@ class BookController extends AdminController
         }
 
         $publisherModel = new Publisher();
-        $publishers = $publisherModel->getAll();
+        $authorModel = new Author();
+        $genreModel = new Genre();
 
         $this->view('admin/edit_book', [
             'title' => 'Редагувати книгу',
             'book' => $book,
-            'publishers' => $publishers
+            'publishers' => $publisherModel->getAll(),
+            'authors' => $authorModel->getAll(),
+            'genres' => $genreModel->getAll(),
+            'currentAuthors' => $bookModel->getAuthorIds((int)$id),
+            'currentGenres' => $bookModel->getGenreIds((int)$id)
         ]);
     }
 

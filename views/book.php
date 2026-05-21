@@ -4,6 +4,8 @@
 ?>
 <article>
     <h2><?php echo htmlspecialchars($book['title']); ?></h2>
+    <p><strong>Автор(и):</strong> <?php echo htmlspecialchars($book['authors_list'] ?: 'Не вказано'); ?></p>
+    <p><strong>Жанр(и):</strong> <?php echo htmlspecialchars($book['genres_list'] ?: 'Не вказано'); ?></p>
     <p><strong>ISBN:</strong> <?php echo htmlspecialchars($book['isbn']); ?></p>
     <p><strong>Рік видання:</strong> <?php echo htmlspecialchars($book['publication_year']); ?></p>
     <p><strong>Видавництво:</strong> <?php echo htmlspecialchars($book['publisher_name']); ?></p>
