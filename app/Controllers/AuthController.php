@@ -46,6 +46,12 @@ class AuthController extends Controller
                     'role' => $user['role']
                 ];
 
+                if (isset($_POST['remember'])) {
+                    $token = bin2hex(random_bytes(32));
+                    $customerModel->updateRememberToken($user['customer_id'], $token);
+                    setcookie('remember_me', $token, time() + (30 * 24 * 60 * 60), '/', '', false, true);
+                }
+
                 if ($user['role'] === 'admin') {
                     header('Location: /coursework/admin/dashboard');
                 } else {
@@ -60,9 +66,37 @@ class AuthController extends Controller
 
     public function logout(): void
     {
+        if (isset($_SESSION['user'])) {
+            $customerModel = new Customer();
+            $customerModel->updateRememberToken((int)$_SESSION['user']['id'], null);
+        }
+
+        if (isset($_COOKIE['remember_me'])) {
+            setcookie('remember_me', '', time() - 3600, '/');
+        }
+
         unset($_SESSION['user']);
         session_destroy();
         header('Location: /coursework/');
         exit;
+    }
+
+    public function checkEmailAjax(): void
+    {
+        $response = new \App\Core\Response();
+        $input = json_decode(file_get_contents('php://input'), true);
+        $email = isset($input['email']) ? trim($input['email']) : '';
+
+        if (empty($email)) {
+            $response->json(['success' => false, 'message' => 'Email не вказано'], 400);
+        }
+
+        $customerModel = new Customer();
+        $user = $customerModel->getByEmail($email);
+
+        $response->json([
+            'success' => true,
+            'exists' => (bool)$user
+        ]);
     }
 }

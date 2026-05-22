@@ -23,6 +23,41 @@ spl_autoload_register(function ($class) {
     }
 });
 
+if (!isset($_SESSION['user']) && isset($_COOKIE['remember_me'])) {
+    $customerModel = new \App\Models\Customer();
+    $user = $customerModel->getByRememberToken($_COOKIE['remember_me']);
+    if ($user) {
+        $_SESSION['user'] = [
+            'id' => $user['customer_id'],
+            'name' => $user['first_name'],
+            'role' => $user['role']
+        ];
+    } else {
+        setcookie('remember_me', '', time() - 3600, '/');
+    }
+}
+
+if (isset($_SESSION['user']) && !isset($_SESSION['cart_loaded_from_db'])) {
+    $cartModel = new \App\Models\Cart();
+    $dbCart = $cartModel->getByCustomerId((int)$_SESSION['user']['id']);
+
+    if (!isset($_SESSION['cart'])) {
+        $_SESSION['cart'] = [];
+    }
+
+    foreach ($_SESSION['cart'] as $bookId => $quantity) {
+        $cartModel->saveItem((int)$_SESSION['user']['id'], (int)$bookId, (int)$quantity);
+    }
+
+    foreach ($dbCart as $bookId => $quantity) {
+        if (!isset($_SESSION['cart'][$bookId])) {
+            $_SESSION['cart'][$bookId] = $quantity;
+        }
+    }
+
+    $_SESSION['cart_loaded_from_db'] = true;
+}
+
 $router = new \App\Core\Router();
 
 $router->add('GET', '', [\App\Controllers\HomeController::class, 'index']);
@@ -57,6 +92,7 @@ $router->add('GET', 'cart/checkout', [\App\Controllers\CartController::class, 'c
 
 $router->add('POST', 'cart/add-ajax', [\App\Controllers\CartController::class, 'addAjax']);
 $router->add('POST', 'cart/update-ajax', [\App\Controllers\CartController::class, 'updateAjax']);
+$router->add('POST', 'cart/remove-ajax', [\App\Controllers\CartController::class, 'removeAjax']);
 
 $router->add('GET', 'orders', [\App\Controllers\ProfileController::class, 'orders']);
 

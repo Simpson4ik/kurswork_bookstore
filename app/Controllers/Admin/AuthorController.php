@@ -25,23 +25,4 @@ class AuthorController extends AdminController
         header('Location: /coursework/admin/authors');
         exit;
     }
-
-    public function checkEmailAjax(): void
-    {
-        $response = new \App\Core\Response();
-        $input = json_decode(file_get_contents('php://input'), true);
-        $email = isset($input['email']) ? trim($input['email']) : '';
-
-        if (empty($email)) {
-            $response->json(['success' => false, 'message' => 'Email не вказано'], 400);
-        }
-
-        $customerModel = new \App\Models\Customer();
-        $user = $customerModel->getByEmail($email);
-
-        $response->json([
-            'success' => true,
-            'exists' => (bool)$user
-        ]);
-    }
 }

@@ -28,4 +28,18 @@ class Customer extends Model
         $result = $statement->fetch();
         return $result ?: null;
     }
+
+    public function updateRememberToken(int $id, ?string $token): bool
+    {
+        $statement = $this->db->prepare("UPDATE customers SET remember_token = ? WHERE customer_id = ?");
+        return $statement->execute([$token, $id]);
+    }
+
+    public function getByRememberToken(string $token): ?array
+    {
+        $statement = $this->db->prepare("SELECT * FROM customers WHERE remember_token = ?");
+        $statement->execute([$token]);
+        $result = $statement->fetch();
+        return $result ?: null;
+    }
 }

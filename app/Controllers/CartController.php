@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Core\Controller;
 use App\Models\Book;
+use App\Models\Cart;
 
 class CartController extends Controller
 {
@@ -47,32 +48,9 @@ class CartController extends Controller
             $_SESSION['cart'][$bookId] = 1;
         }
 
-        header('Location: /coursework/cart');
-        exit;
-    }
-
-    public function update(): void
-    {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['quantities'])) {
-            $bookModel = new Book();
-
-            foreach ($_POST['quantities'] as $bookId => $quantity) {
-                $bookId = (int)$bookId;
-                $quantity = (int)$quantity;
-
-                if ($quantity <= 0) {
-                    unset($_SESSION['cart'][$bookId]);
-                } else {
-                    $book = $bookModel->getById($bookId);
-                    if ($book) {
-                        if ($quantity > $book['stock_quantity']) {
-                            $_SESSION['cart'][$bookId] = $book['stock_quantity'];
-                        } else {
-                            $_SESSION['cart'][$bookId] = $quantity;
-                        }
-                    }
-                }
-            }
+        if (isset($_SESSION['user'])) {
+            $cartModel = new Cart();
+            $cartModel->saveItem((int)$_SESSION['user']['id'], $bookId, $_SESSION['cart'][$bookId]);
         }
 
         header('Location: /coursework/cart');
@@ -85,6 +63,11 @@ class CartController extends Controller
 
         if (isset($_SESSION['cart'][$bookId])) {
             unset($_SESSION['cart'][$bookId]);
+        }
+
+        if (isset($_SESSION['user'])) {
+            $cartModel = new Cart();
+            $cartModel->removeItem((int)$_SESSION['user']['id'], $bookId);
         }
 
         header('Location: /coursework/cart');
@@ -121,6 +104,9 @@ class CartController extends Controller
         $customerId = $_SESSION['user']['id'];
 
         if ($orderModel->saveOrder($customerId, $cartItems, $totalPrice)) {
+            $cartModel = new Cart();
+            $cartModel->clear((int)$customerId);
+
             unset($_SESSION['cart']);
             $this->view('order_success', ['title' => 'Замовлення оформлено!']);
         } else {
@@ -154,10 +140,11 @@ class CartController extends Controller
             $response->json(['success' => false, 'message' => 'Вибачте, більше немає в наявності на складі'], 400);
         }
 
-        if (isset($_SESSION['cart'][$bookId])) {
-            $_SESSION['cart'][$bookId]++;
-        } else {
-            $_SESSION['cart'][$bookId] = 1;
+        $_SESSION['cart'][$bookId] = $currentQty + 1;
+
+        if (isset($_SESSION['user'])) {
+            $cartModel = new Cart();
+            $cartModel->saveItem((int)$_SESSION['user']['id'], $bookId, $_SESSION['cart'][$bookId]);
         }
 
         $totalItems = array_sum($_SESSION['cart']);
@@ -191,12 +178,22 @@ class CartController extends Controller
             unset($_SESSION['cart'][$bookId]);
             $quantity = 0;
             $subtotal = 0;
+
+            if (isset($_SESSION['user'])) {
+                $cartModel = new Cart();
+                $cartModel->removeItem((int)$_SESSION['user']['id'], $bookId);
+            }
         } else {
             if ($quantity > $book['stock_quantity']) {
                 $quantity = $book['stock_quantity'];
             }
             $_SESSION['cart'][$bookId] = $quantity;
             $subtotal = $book['price'] * $quantity;
+
+            if (isset($_SESSION['user'])) {
+                $cartModel = new Cart();
+                $cartModel->saveItem((int)$_SESSION['user']['id'], $bookId, $quantity);
+            }
         }
 
         $totalPrice = 0;
@@ -211,6 +208,42 @@ class CartController extends Controller
             'success' => true,
             'quantity' => $quantity,
             'subtotal' => $subtotal . ' грн',
+            'total_price' => $totalPrice . ' грн',
+            'cart_empty' => empty($_SESSION['cart'])
+        ]);
+    }
+
+    public function removeAjax(): void
+    {
+        $response = new \App\Core\Response();
+        $input = json_decode(file_get_contents('php://input'), true);
+
+        if (!isset($input['book_id'])) {
+            $response->json(['success' => false, 'message' => 'Некоректні дані запиту'], 400);
+        }
+
+        $bookId = (int)$input['book_id'];
+
+        if (isset($_SESSION['cart'][$bookId])) {
+            unset($_SESSION['cart'][$bookId]);
+        }
+
+        if (isset($_SESSION['user'])) {
+            $cartModel = new Cart();
+            $cartModel->removeItem((int)$_SESSION['user']['id'], $bookId);
+        }
+
+        $bookModel = new Book();
+        $totalPrice = 0;
+        foreach (($_SESSION['cart'] ?? []) as $id => $qty) {
+            $b = $bookModel->getById((int)$id);
+            if ($b) {
+                $totalPrice += $b['price'] * $qty;
+            }
+        }
+
+        $response->json([
+            'success' => true,
             'total_price' => $totalPrice . ' грн',
             'cart_empty' => empty($_SESSION['cart'])
         ]);
