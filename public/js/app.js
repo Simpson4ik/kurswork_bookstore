@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
 
-    // Патерн "Делегування подій" для додавання товарів до кошика (працює і для динамічного пошуку)
     document.addEventListener('click', function(e) {
         const button = e.target.closest('.btn-add-to-cart');
         if (button) {
@@ -286,6 +285,54 @@ document.addEventListener('DOMContentLoaded', function() {
         updateBadges();
     }
 
+    function initSingleDropdownSystem(inputId, hiddenId, containerListId, itemClass) {
+        const input = document.getElementById(inputId);
+        const hiddenInput = document.getElementById(hiddenId);
+        const listContainer = document.getElementById(containerListId);
+        if (!input || !hiddenInput || !listContainer) return;
+
+        function filterList(filterValue) {
+            const items = listContainer.getElementsByClassName(itemClass);
+            let visibleCount = 0;
+            for (let i = 0; i < items.length; i++) {
+                const text = items[i].textContent || items[i].innerText;
+                if (text.toLowerCase().indexOf(filterValue) > -1 && visibleCount < 5) {
+                    items[i].style.display = 'block';
+                    visibleCount++;
+                } else {
+                    items[i].style.display = 'none';
+                }
+            }
+        }
+
+        input.addEventListener('focus', function() {
+            listContainer.style.display = 'block';
+            filterList(this.value.toLowerCase());
+        });
+
+        input.addEventListener('input', function() {
+            listContainer.style.display = 'block';
+            filterList(this.value.toLowerCase());
+        });
+
+        listContainer.addEventListener('click', function(e) {
+            const item = e.target.closest('.' + itemClass);
+            if (item) {
+                const id = item.getAttribute('data-id');
+                const name = item.getAttribute('data-name');
+                input.value = name;
+                hiddenInput.value = id;
+                listContainer.style.display = 'none';
+            }
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!input.contains(e.target) && !listContainer.contains(e.target)) {
+                listContainer.style.display = 'none';
+            }
+        });
+    }
+
     initTagDropdownSystem('author_search', 'authors-checkbox-container', 'selected-authors-badges', 'author-item-checkbox');
     initTagDropdownSystem('genre_search', 'genres-checkbox-container', 'selected-genres-badges', 'genre-item-checkbox');
     initSingleDropdownSystem('publisher_search', 'publisher_id', 'publishers-list-container', 'publisher-item');
@@ -341,7 +388,6 @@ document.addEventListener('DOMContentLoaded', function() {
             .catch(error => console.error('Помилка фільтрації каталогу:', error));
     }
 
-    // Навішуємо слухачі подій із захистом від брязкоту (Debounce) для текстових полів
     const debouncedFilter = debounce(triggerFilters, 350);
 
     if (catalogSearch) catalogSearch.addEventListener('input', debouncedFilter);
@@ -406,5 +452,60 @@ document.addEventListener('DOMContentLoaded', function() {
             .replace(/>/g, '&gt;')
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&#039;');
+    }
+
+
+
+    const profileForm = document.getElementById('profile-update-form');
+    const profileStatus = document.getElementById('profile-status-message');
+    const saveProfileBtn = document.getElementById('btn-save-profile');
+
+    if (profileForm && profileStatus && saveProfileBtn) {
+        profileForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const originalBtnText = saveProfileBtn.innerText;
+            saveProfileBtn.innerText = '⏳ Синхронізація...';
+            saveProfileBtn.disabled = true;
+            profileStatus.innerText = '';
+
+            const payload = {
+                first_name: document.getElementById('first_name').value.trim(),
+                last_name: document.getElementById('last_name').value.trim(),
+                phone: document.getElementById('phone').value.trim(),
+                email: document.getElementById('email').value.trim()
+            };
+
+            fetch('/coursework/profile/update-ajax', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    saveProfileBtn.innerText = originalBtnText;
+                    saveProfileBtn.disabled = false;
+
+                    if (data.success) {
+                        profileStatus.innerText = '✅ ' + data.message;
+                        profileStatus.style.color = 'var(--success)';
+
+                        const welcomeBadge = document.querySelector('.user-welcome');
+                        if (welcomeBadge) {
+                            welcomeBadge.innerText = 'Вітаємо, ' + payload.first_name + '!';
+                        }
+                    } else {
+                        profileStatus.innerText = '❌ ' + data.message;
+                        profileStatus.style.color = 'var(--danger)';
+                    }
+                })
+                .catch(error => {
+                    console.error('Помилка мережі:', error);
+                    saveProfileBtn.innerText = originalBtnText;
+                    saveProfileBtn.disabled = false;
+                    profileStatus.innerText = '❌ Сталася помилка мережевого з\'єднання.';
+                    profileStatus.style.color = 'var(--danger)';
+                });
+        });
     }
 });

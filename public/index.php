@@ -96,6 +96,9 @@ $router->add('POST', 'cart/update-ajax', [\App\Controllers\CartController::class
 $router->add('POST', 'cart/remove-ajax', [\App\Controllers\CartController::class, 'removeAjax']);
 
 $router->add('GET', 'orders', [\App\Controllers\ProfileController::class, 'orders']);
+$router->add('GET', 'profile', [\App\Controllers\ProfileController::class, 'index']);
+$router->add('POST', 'profile/update-ajax', [\App\Controllers\ProfileController::class, 'updateAjax']);
+
 
 $url = $_GET['url'] ?? '';
 $method = $_SERVER['REQUEST_METHOD'];

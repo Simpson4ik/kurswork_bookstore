@@ -42,4 +42,29 @@ class Customer extends Model
         $result = $statement->fetch();
         return $result ?: null;
     }
+
+    public function getById(int $id): ?array
+    {
+        $statement = $this->db->prepare("SELECT * FROM customers WHERE customer_id = ?");
+        $statement->execute([$id]);
+        $result = $statement->fetch();
+        return $result ?: null;
+    }
+
+    public function updateProfile(int $id, array $data): bool
+    {
+        $statement = $this->db->prepare("
+            UPDATE customers 
+            SET first_name = ?, last_name = ?, phone = ?, email = ? 
+            WHERE customer_id = ?
+        ");
+
+        return $statement->execute([
+            $data['first_name'],
+            $data['last_name'],
+            $data['phone'],
+            $data['email'],
+            $id
+        ]);
+    }
 }
