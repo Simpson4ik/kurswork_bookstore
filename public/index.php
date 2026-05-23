@@ -89,6 +89,7 @@ $router->add('GET', 'cart/add/{id}', [\App\Controllers\CartController::class, 'a
 $router->add('GET', 'cart/remove/{id}', [\App\Controllers\CartController::class, 'remove']);
 $router->add('POST', 'cart/update', [\App\Controllers\CartController::class, 'update']);
 $router->add('GET', 'cart/checkout', [\App\Controllers\CartController::class, 'checkout']);
+$router->add('GET', 'books/search', [\App\Controllers\BookController::class, 'searchAjax']);
 
 $router->add('POST', 'cart/add-ajax', [\App\Controllers\CartController::class, 'addAjax']);
 $router->add('POST', 'cart/update-ajax', [\App\Controllers\CartController::class, 'updateAjax']);

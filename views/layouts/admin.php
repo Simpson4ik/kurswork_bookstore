@@ -29,5 +29,6 @@
         Режим адміністрування &copy; <?php echo date('Y'); ?> Bookstore CRM.
     </p>
 </footer>
+<script src="/coursework/public/js/app.js?v=2"></script>
 </body>
 </html>

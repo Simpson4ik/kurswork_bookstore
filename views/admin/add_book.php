@@ -31,51 +31,60 @@
         <label for="cover_image">Обкладинка книги (JPG, PNG, WebP):</label>
         <input type="file" id="cover_image" name="cover_image" accept="image/jpeg,image/png,image/webp">
     </div>
-    <div>
-        <label for="publisher_search">Видавництво (пошук):</label>
-        <input type="text" id="publisher_search" placeholder="Почніть вводити назву видавництва...">
-        <label for="publisher_id">Обрати видавництво:</label>
-        <select id="publisher_id" name="publisher_id" required>
-            <option value="">-- Оберіть зі списку --</option>
-            <?php foreach ($publishers as $publisher): ?>
-                <option value="<?php echo $publisher['publisher_id']; ?>">
-                    <?php echo htmlspecialchars($publisher['publisher_name']); ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
-    </div>
 
-    <div style="margin-bottom: 15px;">
-        <label for="author_search"><strong>Автори книги (пошук):</strong></label>
-        <input type="text" id="author_search" placeholder="Почніть вводити прізвище автора..." style="margin-bottom: 8px;">
-        <div id="authors-checkbox-container" style="max-height: 150px; overflow-y: auto; border: 1px solid var(--border); padding: 10px; border-radius: 6px; background: var(--panel-galaxy);">
-            <?php if(!empty($authors)): ?>
-                <?php foreach ($authors as $author): ?>
-                    <label style="display: block; margin-bottom: 6px; font-weight: normal;">
-                        <input type="checkbox" name="authors[]" value="<?php echo $author['author_id']; ?>">
-                        <?php echo htmlspecialchars($author['last_name'] . ' ' . $author['first_name']); ?>
-                    </label>
+    <div style="margin-bottom: 20px;">
+        <label for="publisher_search"><strong>Видавництво:</strong></label>
+        <div class="dropdown-search-wrapper">
+            <input type="text" id="publisher_search" placeholder="Клікніть або введіть текст для пошуку видавництва..." autocomplete="off" required>
+            <input type="hidden" id="publisher_id" name="publisher_id" value="">
+            <div id="publishers-list-container" class="dropdown-search-list">
+                <?php foreach ($publishers as $publisher): ?>
+                    <div class="publisher-item" data-id="<?php echo $publisher['publisher_id']; ?>" data-name="<?php echo htmlspecialchars($publisher['publisher_name']); ?>" style="padding: 8px; cursor: pointer; border-radius: 6px; transition: background 0.2s;">
+                        <?php echo htmlspecialchars($publisher['publisher_name']); ?>
+                    </div>
                 <?php endforeach; ?>
-            <?php else: ?>
-                <span style="color: red; font-size: 14px;">Спочатку додайте авторів в довідник!</span>
-            <?php endif; ?>
+            </div>
         </div>
     </div>
 
     <div style="margin-bottom: 20px;">
-        <label for="genre_search"><strong>Жанри книги (пошук):</strong></label>
-        <input type="text" id="genre_search" placeholder="Почніть вводити назву жанру..." style="margin-bottom: 8px;">
-        <div id="genres-checkbox-container" style="max-height: 150px; overflow-y: auto; border: 1px solid var(--border); padding: 10px; border-radius: 6px; background: var(--panel-galaxy);">
-            <?php if(!empty($genres)): ?>
-                <?php foreach ($genres as $genre): ?>
-                    <label style="display: block; margin-bottom: 6px; font-weight: normal;">
-                        <input type="checkbox" name="genres[]" value="<?php echo $genre['genre_id']; ?>">
-                        <?php echo htmlspecialchars($genre['genre_name']); ?>
-                    </label>
-                <?php endforeach; ?>
-            <?php else: ?>
-                <span style="color: red; font-size: 14px;">Спочатку додайте жанри в довідник!</span>
-            <?php endif; ?>
+        <label><strong>Автори книги:</strong></label>
+        <div id="selected-authors-badges" class="tags-container"></div>
+        <div class="dropdown-search-wrapper">
+            <input type="text" id="author_search" placeholder="Клікніть або введіть текст для пошуку авторів..." autocomplete="off">
+            <div id="authors-checkbox-container" class="dropdown-search-list">
+                <?php if(!empty($authors)): ?>
+                    <?php foreach ($authors as $author): ?>
+                        <?php $fullName = $author['last_name'] . ' ' . $author['first_name']; ?>
+                        <label>
+                            <input type="checkbox" name="authors[]" value="<?php echo $author['author_id']; ?>" class="author-item-checkbox" data-name="<?php echo htmlspecialchars($fullName); ?>">
+                            <?php echo htmlspecialchars($fullName); ?>
+                        </label>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <span style="color: red; font-size: 14px; padding: 6px; display: block;">Спочатку додайте авторів в довідник!</span>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+
+    <div style="margin-bottom: 25px;">
+        <label><strong>Жанри книги:</strong></label>
+        <div id="selected-genres-badges" class="tags-container"></div>
+        <div class="dropdown-search-wrapper">
+            <input type="text" id="genre_search" placeholder="Клікніть або введіть текст для пошуку жанрів..." autocomplete="off">
+            <div id="genres-checkbox-container" class="dropdown-search-list">
+                <?php if(!empty($genres)): ?>
+                    <?php foreach ($genres as $genre): ?>
+                        <label>
+                            <input type="checkbox" name="genres[]" value="<?php echo $genre['genre_id']; ?>" class="genre-item-checkbox" data-name="<?php echo htmlspecialchars($genre['genre_name']); ?>">
+                            <?php echo htmlspecialchars($genre['genre_name']); ?>
+                        </label>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <span style="color: red; font-size: 14px; padding: 6px; display: block;">Спочатку додайте жанри в довідник!</span>
+                <?php endif; ?>
+            </div>
         </div>
     </div>
 

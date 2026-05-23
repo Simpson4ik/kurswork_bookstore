@@ -4,12 +4,14 @@ namespace App\Controllers;
 
 use App\Core\Controller;
 use App\Models\Book;
+use App\Models\Genre;
 
 class HomeController extends Controller
 {
     public function index(): void
     {
         $bookModel = new Book();
+        $genreModel = new Genre();
 
         $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
         if ($page < 1) {
@@ -29,6 +31,7 @@ class HomeController extends Controller
         $this->view('home', [
             'title' => 'Головна сторінка інтернет-магазину',
             'books' => $books,
+            'genres' => $genreModel->getAll(),
             'currentPage' => $page,
             'totalPages' => $totalPages
         ]);

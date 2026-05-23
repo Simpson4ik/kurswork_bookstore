@@ -143,4 +143,99 @@ class Book extends Model
         $statement = $this->db->prepare("DELETE FROM book_genres WHERE book_id = ?");
         $statement->execute([$bookId]);
     }
+
+    public function getAuthorIds(int $bookId): array
+    {
+        $statement = $this->db->prepare("SELECT author_id FROM book_authors WHERE book_id = ?");
+        $statement->execute([$bookId]);
+        return $statement->fetchAll(\PDO::FETCH_COLUMN) ?: [];
+    }
+
+    public function getGenreIds(int $bookId): array
+    {
+        $statement = $this->db->prepare("SELECT genre_id FROM book_genres WHERE book_id = ?");
+        $statement->execute([$bookId]);
+        return $statement->fetchAll(\PDO::FETCH_COLUMN) ?: [];
+    }
+
+    public function search(string $query): array
+    {
+        $search = '%' . $query . '%';
+        $statement = $this->db->prepare("
+            SELECT books.*, publishers.publisher_name,
+                   GROUP_CONCAT(DISTINCT CONCAT(authors.last_name, ' ', authors.first_name) SEPARATOR ', ') AS authors_list,
+                   GROUP_CONCAT(DISTINCT genres.genre_name SEPARATOR ', ') AS genres_list
+            FROM books 
+            JOIN publishers ON books.publisher_id = publishers.publisher_id 
+            LEFT JOIN book_authors ON books.book_id = book_authors.book_id 
+            LEFT JOIN authors ON book_authors.author_id = authors.author_id 
+            LEFT JOIN book_genres ON books.book_id = book_genres.book_id 
+            LEFT JOIN genres ON book_genres.genre_id = genres.genre_id 
+            WHERE books.title LIKE ? 
+               OR publishers.publisher_name LIKE ? 
+               OR authors.last_name LIKE ? 
+               OR authors.first_name LIKE ? 
+               OR genres.genre_name LIKE ?
+            GROUP BY books.book_id 
+            ORDER BY books.book_id DESC
+        ");
+        $statement->execute([$search, $search, $search, $search, $search]);
+        return $statement->fetchAll() ?: [];
+    }
+
+    public function filter(array $filters): array
+    {
+        $sql = "
+            SELECT books.*, publishers.publisher_name,
+                   GROUP_CONCAT(DISTINCT CONCAT(authors.last_name, ' ', authors.first_name) SEPARATOR ', ') AS authors_list,
+                   GROUP_CONCAT(DISTINCT genres.genre_name SEPARATOR ', ') AS genres_list
+            FROM books 
+            JOIN publishers ON books.publisher_id = publishers.publisher_id 
+            LEFT JOIN book_authors ON books.book_id = book_authors.book_id 
+            LEFT JOIN authors ON book_authors.author_id = authors.author_id 
+            LEFT JOIN book_genres ON books.book_id = book_genres.book_id 
+            LEFT JOIN genres ON book_genres.genre_id = genres.genre_id
+        ";
+
+        $conditions = [];
+        $params = [];
+
+        if (!empty($filters['q'])) {
+            $search = '%' . $filters['q'] . '%';
+            $conditions[] = "(books.title LIKE ? OR publishers.publisher_name LIKE ? OR authors.last_name LIKE ? OR authors.first_name LIKE ? OR genres.genre_name LIKE ?)";
+            array_push($params, $search, $search, $search, $search, $search);
+        }
+
+        if (isset($filters['min_price']) && $filters['min_price'] !== '') {
+            $conditions[] = "books.price >= ?";
+            $params[] = (float)$filters['min_price'];
+        }
+        if (isset($filters['max_price']) && $filters['max_price'] !== '') {
+            $conditions[] = "books.price <= ?";
+            $params[] = (float)$filters['max_price'];
+        }
+
+        if (!empty($filters['in_stock']) && $filters['in_stock'] === 'true') {
+            $conditions[] = "books.stock_quantity > 0";
+        }
+
+        if (!empty($filters['genres']) && is_array($filters['genres'])) {
+            $genreIds = array_map('intval', $filters['genres']);
+            $placeholders = implode(',', array_fill(0, count($genreIds), '?'));
+            $conditions[] = "books.book_id IN (SELECT book_id FROM book_genres WHERE genre_id IN ($placeholders))";
+            foreach ($genreIds as $id) {
+                $params[] = $id;
+            }
+        }
+
+        if (!empty($conditions)) {
+            $sql .= " WHERE " . implode(" AND ", $conditions);
+        }
+
+        $sql .= " GROUP BY books.book_id ORDER BY books.book_id DESC";
+
+        $statement = $this->db->prepare($sql);
+        $statement->execute($params);
+        return $statement->fetchAll() ?: [];
+    }
 }
