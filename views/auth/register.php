@@ -2,6 +2,12 @@
 <h2>Реєстрація нового користувача</h2>
 
 <form action="/coursework/register/store" method="POST" id="register-form">
+    <?php if (!empty($error)): ?>
+        <div style="background-color: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); color: var(--danger); padding: 12px; border-radius: 8px; margin-bottom: 18px; font-weight: 600; font-size: 14px; text-align: center;">
+            ✕ <?php echo htmlspecialchars($error); ?>
+        </div>
+    <?php endif; ?>
+
     <div>
         <label for="first_name">Ім'я:</label>
         <input type="text" id="first_name" name="first_name" required>

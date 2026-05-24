@@ -7,6 +7,7 @@ use App\Models\Publisher;
 use App\Models\Author;
 use App\Models\Genre;
 use App\Core\Response;
+use App\Core\Database;
 
 class BookController extends AdminController
 {
@@ -34,6 +35,14 @@ class BookController extends AdminController
             $response->json(['success' => false, 'message' => 'Будь ласка, заповніть всі обов\'язкові поля, включаючи видавництво'], 400);
         }
 
+        $price = (float)$_POST['price'];
+        $stock = (int)$_POST['stock_quantity'];
+        $year = (int)$_POST['publication_year'];
+
+        if ($price < 0 || $stock < 0 || $year < 0) {
+            $response->json(['success' => false, 'message' => 'Ціна, кількість та рік видання не можуть бути від\'ємними'], 400);
+        }
+
         $coverName = null;
         if (!empty($_FILES['cover_image']['tmp_name'])) {
             $coverName = $this->uploadAndConvertToWebp($_FILES['cover_image']);
@@ -43,10 +52,16 @@ class BookController extends AdminController
         }
 
         $bookModel = new Book();
+        $db = Database::getInstance()->getConnection();
 
         try {
+            $db->beginTransaction();
+
             $bookData = $_POST;
             $bookData['cover_image'] = $coverName;
+            $bookData['price'] = $price;
+            $bookData['stock_quantity'] = $stock;
+            $bookData['publication_year'] = $year;
 
             $bookId = $bookModel->create($bookData);
 
@@ -57,8 +72,10 @@ class BookController extends AdminController
                 $bookModel->attachGenres($bookId, $_POST['genres']);
             }
 
+            $db->commit();
             $response->json(['success' => true, 'message' => 'Книгу та її медіа-файли успішно додано до каталогу']);
         } catch (\Exception $e) {
+            $db->rollBack();
             if ($coverName && file_exists($this->uploadDir . $coverName)) {
                 unlink($this->uploadDir . $coverName);
             }
@@ -72,8 +89,10 @@ class BookController extends AdminController
         $book = $bookModel->getById((int)$id);
 
         if (!$book) {
-            $response = new Response();
-            $response->setStatus(404)->send("<h2>Помилка 404</h2><p>Книгу для редагування не знайдено.</p>");
+            http_response_code(404);
+            $this->layout = '';
+            $this->view('errors/404');
+            exit;
         }
 
         $publisherModel = new Publisher();
@@ -103,22 +122,38 @@ class BookController extends AdminController
             $response->json(['success' => false, 'message' => 'Об\'єкт редагування відсутній'], 404);
         }
 
-        $coverName = $currentBook['cover_image'];
+        if (empty($_POST['title']) || empty($_POST['publisher_id']) || empty($_POST['price'])) {
+            $response->json(['success' => false, 'message' => 'Будь ласка, заповніть всі обов\'язкові поля'], 400);
+        }
+
+        $price = (float)$_POST['price'];
+        $stock = (int)$_POST['stock_quantity'];
+        $year = (int)$_POST['publication_year'];
+
+        if ($price < 0 || $stock < 0 || $year < 0) {
+            $response->json(['success' => false, 'message' => 'Числові значення не можуть бути від\'ємними'], 400);
+        }
+
+        $oldCover = $currentBook['cover_image'];
+        $newCover = null;
+
         if (!empty($_FILES['cover_image']['tmp_name'])) {
             $newCover = $this->uploadAndConvertToWebp($_FILES['cover_image']);
-            if ($newCover) {
-                if ($coverName && file_exists($this->uploadDir . $coverName)) {
-                    unlink($this->uploadDir . $coverName);
-                }
-                $coverName = $newCover;
-            } else {
+            if (!$newCover) {
                 $response->json(['success' => false, 'message' => 'Некоректний формат нового зображення'], 400);
             }
         }
 
+        $db = Database::getInstance()->getConnection();
+
         try {
+            $db->beginTransaction();
+
             $bookData = $_POST;
-            $bookData['cover_image'] = $coverName;
+            $bookData['cover_image'] = $newCover ?? $oldCover;
+            $bookData['price'] = $price;
+            $bookData['stock_quantity'] = $stock;
+            $bookData['publication_year'] = $year;
 
             $bookModel->update($bookId, $bookData);
 
@@ -132,36 +167,56 @@ class BookController extends AdminController
                 $bookModel->attachGenres($bookId, $_POST['genres']);
             }
 
+            $db->commit();
+
+            if ($newCover && $oldCover && file_exists($this->uploadDir . $oldCover)) {
+                unlink($this->uploadDir . $oldCover);
+            }
+
             $response->json(['success' => true, 'message' => 'Дані книги оновлено']);
         } catch (\Exception $e) {
+            $db->rollBack();
+            if ($newCover && file_exists($this->uploadDir . $newCover)) {
+                unlink($this->uploadDir . $newCover);
+            }
             $response->json(['success' => false, 'message' => 'Помилка збереження: ' . $e->getMessage()], 500);
         }
     }
 
     public function delete(string $id): void
     {
+        $response = new Response();
         $bookId = (int)$id;
         $bookModel = new Book();
         $book = $bookModel->getById($bookId);
 
-        if ($book) {
-            if ($book['cover_image'] && file_exists($this->uploadDir . $book['cover_image'])) {
-                unlink($this->uploadDir . $book['cover_image']);
-            }
+        if (!$book) {
+            $response->json(['success' => false, 'message' => 'Книгу для видалення не знайдено'], 404);
+        }
+
+        $db = Database::getInstance()->getConnection();
+        try {
+            $db->beginTransaction();
+
             $bookModel->detachAuthors($bookId);
             $bookModel->detachGenres($bookId);
             $bookModel->delete($bookId);
-        }
 
-        $this->redirect('admin/dashboard');
+            $db->commit();
+
+            if ($book['cover_image'] && file_exists($this->uploadDir . $book['cover_image'])) {
+                unlink($this->uploadDir . $book['cover_image']);
+            }
+
+            $response->json(['success' => true, 'message' => 'Книгу успішно видалено з каталогу']);
+        } catch (\Exception $e) {
+            $db->rollBack();
+            $response->json(['success' => false, 'message' => 'Помилка бази даних при видаленні книги: ' . $e->getMessage()], 500);
+        }
     }
 
     private function uploadAndConvertToWebp(array $file): ?string
     {
-        if (!imagesx(imagecreatefromstring(file_get_contents($file['tmp_name'])))) {
-            return null;
-        }
-
         $imageInfo = getimagesize($file['tmp_name']);
         if (!$imageInfo) {
             return null;

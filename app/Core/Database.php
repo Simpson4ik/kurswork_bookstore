@@ -31,8 +31,18 @@ class Database
             if (isset($config['env']) && $config['env'] === 'dev') {
                 die("Database connection failed: " . $e->getMessage());
             } else {
+                if (ob_get_length()) {
+                    ob_clean();
+                }
                 $response = new Response();
-                $response->setStatus(500)->send("<h2>Помилка системи</h2><p>Технічні неполадки на лінії зв'язку з базою даних. Спробуйте пізніше.</p>");
+
+                ob_start();
+                require __DIR__ . '/../../views/errors/500.php';
+                $html = ob_get_clean();
+
+                $response->setStatus(500)
+                    ->addHeader('Content-Type: text/html; charset=utf-8')
+                    ->send($html);
                 exit;
             }
         }

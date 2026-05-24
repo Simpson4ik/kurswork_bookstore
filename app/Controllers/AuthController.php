@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Core\Controller;
 use App\Models\Customer;
+use App\Core\Response;
 
 class AuthController extends Controller
 {
@@ -18,10 +19,12 @@ class AuthController extends Controller
             $customerModel = new Customer();
 
             if ($customerModel->getByEmail($_POST['email'])) {
-                $response = new \App\Core\Response();
-                $base = defined('BASE_PATH') ? BASE_PATH : '';
-
-                $response->setStatus(400)->send("<h2>Помилка реєстрації</h2><p>Користувач з такою поштою вже існує в системі.</p><p><a href='{$base}/register' style='color:#2563eb; text-decoration:none; font-weight:bold;'>&larr; Назад</a></p>");
+                http_response_code(400);
+                $this->view('auth/register', [
+                    'title' => 'Реєстрація',
+                    'error' => 'Користувач з такою поштою вже існує в системі.'
+                ]);
+                exit;
             }
 
             $customerModel->create($_POST);
@@ -41,6 +44,8 @@ class AuthController extends Controller
             $user = $customerModel->getByEmail($_POST['email']);
 
             if ($user && password_verify($_POST['password'], $user['password_hash'])) {
+                session_regenerate_id(true);
+
                 $_SESSION['user'] = [
                     'id' => $user['customer_id'],
                     'name' => $user['first_name'],
@@ -51,7 +56,6 @@ class AuthController extends Controller
                     $token = bin2hex(random_bytes(32));
                     $customerModel->updateRememberToken($user['customer_id'], $token);
 
-                    // Налаштовуємо кукі відповідно до підпапки розгортання сайту
                     $cookiePath = defined('BASE_PATH') && BASE_PATH !== '' ? BASE_PATH : '/';
                     setcookie('remember_me', $token, time() + (30 * 24 * 60 * 60), $cookiePath, '', false, true);
                 }
@@ -63,10 +67,12 @@ class AuthController extends Controller
                 }
             }
 
-            $response = new \App\Core\Response();
-            $base = defined('BASE_PATH') ? BASE_PATH : '';
-
-            $response->setStatus(401)->send("<h2>Помилка входу</h2><p>Неправильний email або пароль.</p><p><a href='{$base}/login' style='color:#2563eb; text-decoration:none; font-weight:bold;'>Спробувати знову &rarr;</a></p>");
+            http_response_code(401);
+            $this->view('auth/login', [
+                'title' => 'Вхід',
+                'error' => 'Неправильний email або пароль.'
+            ]);
+            exit;
         }
     }
 
@@ -82,14 +88,28 @@ class AuthController extends Controller
             setcookie('remember_me', '', time() - 3600, $cookiePath);
         }
 
-        unset($_SESSION['user']);
+        $_SESSION = [];
+
+        if (ini_get("session.use_cookies")) {
+            $params = session_get_cookie_params();
+            setcookie(
+                session_name(),
+                '',
+                time() - 42000,
+                $params["path"],
+                $params["domain"],
+                $params["secure"],
+                $params["httponly"]
+            );
+        }
+
         session_destroy();
         $this->redirect('login');
     }
 
     public function checkEmailAjax(): void
     {
-        $response = new \App\Core\Response();
+        $response = new Response();
         $input = json_decode(file_get_contents('php://input'), true);
         $email = isset($input['email']) ? trim($input['email']) : '';
 

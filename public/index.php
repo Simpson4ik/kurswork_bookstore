@@ -24,17 +24,16 @@ if ($config['env'] === 'dev') {
 
 define('BASE_PATH', $config['base_path']);
 
-$isProd = ($config['env'] === 'prod');
-session_set_cookie_params([
-    'lifetime' => 0,
-    'path' => BASE_PATH ?: '/',
-    'domain' => $_SERVER['SERVER_NAME'] ?? '',
-    'secure' => $isProd,
-    'httponly' => true,
-    'samesite' => 'Strict'
-]);
+$cookiePath = BASE_PATH ?: '/';
 
-session_start();
+session_start([
+    'cookie_lifetime' => 0,
+    'cookie_path' => $cookiePath,
+    'cookie_secure' => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on',
+    'cookie_httponly' => true,
+    'cookie_samesite' => 'Lax',
+    'use_strict_mode' => true
+]);
 
 spl_autoload_register(function ($class) {
     $prefix = 'App\\';
@@ -63,7 +62,7 @@ if (!isset($_SESSION['user']) && isset($_COOKIE['remember_me'])) {
             'role' => $user['role']
         ];
     } else {
-        setcookie('remember_me', '', time() - 3600, '/');
+        setcookie('remember_me', '', time() - 3600, $cookiePath);
     }
 }
 
@@ -115,8 +114,6 @@ $router->add('GET', 'admin/genres', [\App\Controllers\Admin\GenreController::cla
 $router->add('POST', 'admin/genres/store', [\App\Controllers\Admin\GenreController::class, 'store']);
 
 $router->add('GET', 'cart', [\App\Controllers\CartController::class, 'index']);
-$router->add('GET', 'cart/add/{id}', [\App\Controllers\CartController::class, 'add']);
-$router->add('GET', 'cart/remove/{id}', [\App\Controllers\CartController::class, 'remove']);
 $router->add('POST', 'cart/update', [\App\Controllers\CartController::class, 'update']);
 $router->add('POST', 'cart/checkout', [\App\Controllers\CartController::class, 'checkout']);
 $router->add('GET', 'books/search', [\App\Controllers\BookController::class, 'searchAjax']);
@@ -151,11 +148,13 @@ try {
 
     $response = new \App\Core\Response();
 
-    $html = "<!DOCTYPE html><html lang='uk'><head><meta charset='UTF-8'><title>500 Внутрішня помилка сервера</title></head><body style='background:#0b0f19; color:#f8fafc; font-family:system-ui, sans-serif; text-align:center; padding-top:100px;'><h1 style='color:#ef4444; font-size:64px; margin-bottom:10px;'>500</h1><h2 style='font-size:24px; margin-bottom:15px;'>Внутрішня помилка сервера</h2><p style='color:#94a3b8; max-width:500px; margin:0 auto 30px auto; line-height:1.6;'>Сталася непередбачувана аномалія в системі розрахунків. Наші інженери вже усувають несправність.</p><a href='/coursework/' style='display:inline-block; background:#2563eb; color:#fff; text-decoration:none; padding:12px 24px; font-weight:600; border-radius:8px;'>&larr; Повернутися на головну</a></body></html>";
+    $displayTrace = ($config['env'] === 'dev');
+    $errorMessage = $e->getMessage();
+    $errorTrace = $e->getTraceAsString();
 
-    if ($config['env'] === 'dev') {
-        $html .= "<pre style='text-align:left; max-width:800px; margin:20px auto; background:#161f33; padding:20px; border-radius:8px; color:#ef4444; overflow-x:auto;'>" . htmlspecialchars($e->getMessage()) . "\n" . htmlspecialchars($e->getTraceAsString()) . "</pre>";
-    }
+    ob_start();
+    require __DIR__ . '/../views/errors/500.php';
+    $html = ob_get_clean();
 
     $response->setStatus(500)
         ->addHeader('Content-Type: text/html; charset=utf-8')

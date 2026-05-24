@@ -48,6 +48,12 @@
             <form action="/coursework/cart/checkout" method="POST" style="max-width: 100%; margin-top: 30px; padding: 25px;">
                 <h3 style="color: var(--neon-glow); margin-top: 0; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px;">📋 Дані для відправки замовлення</h3>
 
+                <?php if (!empty($error)): ?>
+                    <div style="background-color: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); color: var(--danger); padding: 12px; border-radius: 8px; margin-bottom: 18px; font-weight: 600; font-size: 14px; text-align: center;">
+                        ✕ <?php echo htmlspecialchars($error); ?>
+                    </div>
+                <?php endif; ?>
+
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                     <div>
                         <label for="first_name">Ім'я</label>

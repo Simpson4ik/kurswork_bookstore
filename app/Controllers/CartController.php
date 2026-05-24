@@ -7,6 +7,7 @@ use App\Models\Book;
 use App\Models\Cart;
 use App\Models\Customer;
 use App\Models\Order;
+use App\Core\Response;
 
 class CartController extends Controller
 {
@@ -43,43 +44,6 @@ class CartController extends Controller
         ]);
     }
 
-    public function add(string $id): void
-    {
-        $bookId = (int)$id;
-
-        if (!isset($_SESSION['cart'])) {
-            $_SESSION['cart'] = [];
-        }
-
-        if (isset($_SESSION['cart'][$bookId])) {
-            $_SESSION['cart'][$bookId]++;
-        } else {
-            $_SESSION['cart'][$bookId] = 1;
-        }
-
-        if (isset($_SESSION['user'])) {
-            $cartModel = new Cart();
-            $cartModel->saveItem((int)$_SESSION['user']['id'], $bookId, $_SESSION['cart'][$bookId]);
-        }
-
-        $this->redirect('cart');
-    }
-
-    public function remove(string $id): void
-    {
-        $bookId = (int)$id;
-
-        if (isset($_SESSION['cart'][$bookId])) {
-            unset($_SESSION['cart'][$bookId]);
-        }
-
-        if (isset($_SESSION['user'])) {
-            $cartModel = new Cart();
-            $cartModel->removeItem((int)$_SESSION['user']['id'], $bookId);
-        }
-        $this->redirect('orders');
-    }
-
     public function checkout(): void
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -99,13 +63,35 @@ class CartController extends Controller
         $lastName = isset($_POST['last_name']) ? trim($_POST['last_name']) : '';
         $phone = isset($_POST['phone']) ? trim($_POST['phone']) : '';
 
-        if (empty($firstName) || empty($lastName) || empty($phone)) {
-            die("Помилка: Заповніть усі обов'язкові поля форми доставки.");
-        }
-
         $customerId = (int)$_SESSION['user']['id'];
         $customerModel = new Customer();
         $userRow = $customerModel->getById($customerId);
+
+        $bookModel = new Book();
+        $cartItems = [];
+        $totalPrice = 0;
+
+        foreach ($cart as $bookId => $quantity) {
+            $book = $bookModel->getById((int)$bookId);
+            if ($book) {
+                $book['quantity'] = $quantity;
+                $book['subtotal'] = $book['price'] * $quantity;
+                $totalPrice += $book['subtotal'];
+                $cartItems[] = $book;
+            }
+        }
+
+        if (empty($firstName) || empty($lastName) || empty($phone)) {
+            http_response_code(400);
+            $this->view('cart', [
+                'title' => 'Мій кошик',
+                'cartItems' => $cartItems,
+                'totalPrice' => $totalPrice,
+                'user' => $userRow,
+                'error' => 'Заповніть усі обов\'язкові поля форми доставки.'
+            ]);
+            exit;
+        }
 
         if ($userRow) {
             $customerModel->updateProfile($customerId, [
@@ -117,19 +103,6 @@ class CartController extends Controller
             $_SESSION['user']['name'] = $firstName;
         }
 
-        $bookModel = new Book();
-        $cartItems = [];
-        $totalPrice = 0;
-
-        foreach ($cart as $bookId => $quantity) {
-            $book = $bookModel->getById((int)$bookId);
-            if ($book) {
-                $book['quantity'] = $quantity;
-                $totalPrice += $book['price'] * $quantity;
-                $cartItems[] = $book;
-            }
-        }
-
         $orderModel = new Order();
 
         if ($orderModel->saveOrder($customerId, $cartItems, $totalPrice)) {
@@ -139,14 +112,16 @@ class CartController extends Controller
             unset($_SESSION['cart']);
             $this->view('order_success', ['title' => 'Замовлення оформлено!']);
         } else {
-            $response = new \App\Core\Response();
-            $response->setStatus(500)->send("<h2>Помилка сервера</h2><p>Не вдалося зберегти замовлення через критичну помилку бази даних. Спробуйте пізніше.</p>");
+            http_response_code(500);
+            $this->layout = '';
+            $this->view('errors/500');
+            exit;
         }
     }
 
     public function addAjax(): void
     {
-        $response = new \App\Core\Response();
+        $response = new Response();
         $input = json_decode(file_get_contents('php://input'), true);
         $bookId = isset($input['book_id']) ? (int)$input['book_id'] : 0;
 
@@ -187,7 +162,7 @@ class CartController extends Controller
 
     public function updateAjax(): void
     {
-        $response = new \App\Core\Response();
+        $response = new Response();
         $input = json_decode(file_get_contents('php://input'), true);
 
         if (!isset($input['book_id']) || !isset($input['quantity'])) {
@@ -225,13 +200,7 @@ class CartController extends Controller
             }
         }
 
-        $totalPrice = 0;
-        foreach (($_SESSION['cart'] ?? []) as $id => $qty) {
-            $b = $bookModel->getById((int)$id);
-            if ($b) {
-                $totalPrice += $b['price'] * $qty;
-            }
-        }
+        $totalPrice = $this->calculateTotalPrice($bookModel);
 
         $response->json([
             'success' => true,
@@ -244,7 +213,7 @@ class CartController extends Controller
 
     public function removeAjax(): void
     {
-        $response = new \App\Core\Response();
+        $response = new Response();
         $input = json_decode(file_get_contents('php://input'), true);
 
         if (!isset($input['book_id'])) {
@@ -263,6 +232,17 @@ class CartController extends Controller
         }
 
         $bookModel = new Book();
+        $totalPrice = $this->calculateTotalPrice($bookModel);
+
+        $response->json([
+            'success' => true,
+            'total_price' => $totalPrice . ' грн',
+            'cart_empty' => empty($_SESSION['cart'])
+        ]);
+    }
+
+    private function calculateTotalPrice(Book $bookModel): float
+    {
         $totalPrice = 0;
         foreach (($_SESSION['cart'] ?? []) as $id => $qty) {
             $b = $bookModel->getById((int)$id);
@@ -270,11 +250,6 @@ class CartController extends Controller
                 $totalPrice += $b['price'] * $qty;
             }
         }
-
-        $response->json([
-            'success' => true,
-            'total_price' => $totalPrice . ' грн',
-            'cart_empty' => empty($_SESSION['cart'])
-        ]);
+        return $totalPrice;
     }
 }
