@@ -17,9 +17,12 @@ class Router
     {
         $url = parse_url($url, PHP_URL_PATH);
 
-        if (defined('BASE_PATH') && BASE_PATH !== '') {
-            if (strpos($url, BASE_PATH) === 0) {
-                $url = substr($url, strlen(BASE_PATH));
+        $basePath = defined('BASE_PATH') ? BASE_PATH : '';
+        if ($basePath !== '') {
+            if ($url === $basePath) {
+                $url = '';
+            } elseif (strpos($url, $basePath . '/') === 0) {
+                $url = substr($url, strlen($basePath));
             }
         }
 
@@ -30,15 +33,19 @@ class Router
             if (preg_match($route, $url, $matches)) {
                 [$controllerClass, $action] = $handler;
 
-                if (class_exists($controllerClass)) {
-                    $controller = new $controllerClass();
-
-                    if (method_exists($controller, $action)) {
-                        $params = array_filter($matches, 'is_string', ARRAY_FILTER_USE_KEY);
-                        call_user_func_array([$controller, $action], $params);
-                        return;
-                    }
+                if (!class_exists($controllerClass)) {
+                    throw new \RuntimeException("Target controller class '{$controllerClass}' not found for route '{$url}'");
                 }
+
+                $controller = new $controllerClass();
+
+                if (!method_exists($controller, $action)) {
+                    throw new \RuntimeException("Action method '{$action}' not found in controller '{$controllerClass}'");
+                }
+
+                $params = array_filter($matches, 'is_string', ARRAY_FILTER_USE_KEY);
+                call_user_func_array([$controller, $action], $params);
+                return;
             }
         }
 

@@ -3,7 +3,7 @@
 /** @var array $authors */
 ?>
 <h2>Додати нового автора</h2>
-<form action="/coursework/admin/authors/store" method="POST" style="max-width: 500px; margin: 0 auto; margin-bottom: 30px;">
+<form action="<?php echo defined('BASE_PATH') ? BASE_PATH : ''; ?>/admin/authors/store" method="POST" style="max-width: 500px; margin: 0 auto; margin-bottom: 30px;">
     <div>
         <label for="first_name">Ім'я автора:</label>
         <input type="text" id="first_name" name="first_name" placeholder="Напр. Всеволод" required>
@@ -31,7 +31,7 @@
     <tbody>
     <?php foreach ($authors as $author): ?>
         <tr>
-            <td><?php echo $author['author_id']; ?></td>
+            <td><?php echo htmlspecialchars($author['author_id']); ?></td>
             <td><strong><?php echo htmlspecialchars($author['last_name'] . ' ' . $author['first_name']); ?></strong></td>
             <td><?php echo htmlspecialchars($author['biography'] ?? '—'); ?></td>
         </tr>

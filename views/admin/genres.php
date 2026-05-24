@@ -3,7 +3,7 @@
 /** @var array $genres */
 ?>
 <h2>Додати новий жанр</h2>
-<form action="/coursework/admin/genres/store" method="POST" style="max-width: 500px; margin: 0 auto; margin-bottom: 30px;">
+<form action="<?php echo defined('BASE_PATH') ? BASE_PATH : ''; ?>/admin/genres/store" method="POST" style="max-width: 500px; margin: 0 auto; margin-bottom: 30px;">
     <label for="genre_name">Назва жанру:</label>
     <input type="text" id="genre_name" name="genre_name" placeholder="Напр. Пригоди" required>
     <button type="submit">Зберегти</button>
@@ -20,7 +20,7 @@
     <tbody>
     <?php foreach ($genres as $genre): ?>
         <tr>
-            <td><?php echo $genre['genre_id']; ?></td>
+            <td><?php echo htmlspecialchars($genre['genre_id']); ?></td>
             <td><strong><?php echo htmlspecialchars($genre['genre_name']); ?></strong></td>
         </tr>
     <?php endforeach; ?>

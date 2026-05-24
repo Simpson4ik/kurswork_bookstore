@@ -35,7 +35,7 @@
                     </td>
                     <td id="subtotal-<?php echo $item['book_id']; ?>"><?php echo $item['subtotal']; ?> грн</td>
                     <td>
-                        <a href="/coursework/cart/remove/<?php echo $item['book_id']; ?>" class="btn-remove-item" data-book-id="<?php echo $item['book_id']; ?>" style="color: red; text-decoration: none;">Видалити</a>
+                        <a href="<?php echo defined('BASE_PATH') ? BASE_PATH : ''; ?>/cart/remove/<?php echo $item['book_id']; ?>" class="btn-remove-item" data-book-id="<?php echo $item['book_id']; ?>" style="color: red; text-decoration: none;">Видалити</a>
                     </td>
                 </tr>
             <?php endforeach; ?>
@@ -45,7 +45,7 @@
         <h3>Загальна вартість: <span id="grand-total"><?php echo $totalPrice; ?> грн</span></h3>
 
         <?php if (isset($_SESSION['user'])): ?>
-            <form action="/coursework/cart/checkout" method="POST" style="max-width: 100%; margin-top: 30px; padding: 25px;">
+            <form action="<?php echo defined('BASE_PATH') ? BASE_PATH : ''; ?>/cart/checkout" method="POST" style="max-width: 100%; margin-top: 30px; padding: 25px;">
                 <h3 style="color: var(--neon-glow); margin-top: 0; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px;">📋 Дані для відправки замовлення</h3>
 
                 <?php if (!empty($error)): ?>
@@ -77,8 +77,8 @@
         <?php else: ?>
             <div style="background-color: var(--panel-galaxy); border: 1px solid var(--border); padding: 20px; border-radius: var(--radius); margin-top: 30px; text-align: center;">
                 <p style="color: var(--text-muted); margin-bottom: 15px;">Для оформлення замовлення необхідно увійти до свого облікового запису.</p>
-                <a href="/coursework/login" class="page-link" style="display: inline-block; margin-right: 10px;">🔑 Вхід</a>
-                <a href="/coursework/register" class="page-link" style="display: inline-block;">📝 Реєстрація</a>
+                <a href="<?php echo defined('BASE_PATH') ? BASE_PATH : ''; ?>/login" class="page-link" style="display: inline-block; margin-right: 10px;">🔑 Вхід</a>
+                <a href="<?php echo defined('BASE_PATH') ? BASE_PATH : ''; ?>/register" class="page-link" style="display: inline-block;">📝 Реєстрація</a>
             </div>
         <?php endif; ?>
 
@@ -86,50 +86,3 @@
         <p style="color: var(--text-muted);">Ваш кошик порожній.</p>
     <?php endif; ?>
 </div>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const qtyInputs = document.querySelectorAll('.cart-qty-input');
-
-        qtyInputs.forEach(input => {
-            input.addEventListener('change', function() {
-                const bookId = this.getAttribute('data-book-id');
-                const newQty = parseInt(this.value);
-
-                fetch('/coursework/cart/update-ajax', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        book_id: bookId,
-                        quantity: newQty
-                    })
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            input.value = data.quantity;
-                            if (data.quantity === 0) {
-                                const row = document.getElementById(`cart-row-${bookId}`);
-                                if (row) row.remove();
-                            } else {
-                                document.getElementById(`subtotal-${bookId}`).innerText = data.subtotal;
-                            }
-
-                            document.getElementById('grand-total').innerText = data.total_price;
-
-                            if (data.cart_empty) {
-                                document.getElementById('cart-container').innerHTML = '<p style="color: var(--text-muted);">Ваш кошик порожній.</p>';
-                            }
-                        } else {
-                            alert('Помилка оновлення: ' + data.message);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Помилка мережі:', error);
-                    });
-            });
-        });
-    });
-</script>

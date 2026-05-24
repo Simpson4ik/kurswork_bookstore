@@ -13,7 +13,7 @@ abstract class Controller
         $viewFile = __DIR__ . '/../../views/' . $view . '.php';
 
         if (!file_exists($viewFile)) {
-            die("View file not found: " . $view);
+            throw new \RuntimeException("View file not found: " . $view);
         }
 
         ob_start();
@@ -25,12 +25,13 @@ abstract class Controller
             if (file_exists($layoutFile)) {
                 require $layoutFile;
             } else {
-                die("Layout file not found: " . $this->layout);
+                throw new \RuntimeException("Layout file not found: " . $this->layout);
             }
         } else {
             echo $content;
         }
     }
+
     public function redirect(string $url): void
     {
         if (ob_get_length()) {

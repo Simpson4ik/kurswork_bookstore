@@ -144,7 +144,17 @@ try {
     if (!is_dir($logDir)) {
         mkdir($logDir, 0777, true);
     }
-    error_log($e->getMessage() . "\n" . $e->getTraceAsString());
+
+    $logMessage = sprintf(
+        "[%s] Critical Exception: %s in %s on line %d\nStack Trace:\n%s\n%s\n",
+        date('Y-m-d H:i:s'),
+        $e->getMessage(),
+        $e->getFile(),
+        $e->getLine(),
+        $e->getTraceAsString(),
+        str_repeat('-', 50)
+    );
+    file_put_contents($logDir . '/error.log', $logMessage, FILE_APPEND);
 
     $response = new \App\Core\Response();
 

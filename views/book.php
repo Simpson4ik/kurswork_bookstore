@@ -5,7 +5,7 @@
 <div class="book-detail-container">
     <div class="book-detail-aside">
         <?php if (!empty($book['cover_image'])): ?>
-            <img src="/coursework/public/uploads/<?php echo $book['cover_image']; ?>" alt="<?php echo htmlspecialchars($book['title']); ?>" class="book-detail-cover">
+            <img src="<?php echo defined('BASE_PATH') ? BASE_PATH : ''; ?>/public/uploads/<?php echo $book['cover_image']; ?>" alt="<?php echo htmlspecialchars($book['title']); ?>" class="book-detail-cover">
         <?php else: ?>
             <div class="book-detail-placeholder">📚 Обкладинка відсутня</div>
         <?php endif; ?>
@@ -23,6 +23,6 @@
         <button type="button" class="btn-add-to-cart" data-book-id="<?php echo $book['book_id']; ?>" style="width: auto; padding: 12px 30px;">
             Додати в кошик
         </button>
-        <p style="margin-top: 20px;"><a href="/coursework/">&larr; Назад до каталогу</a></p>
+        <p style="margin-top: 20px;"><a href="<?php echo defined('BASE_PATH') ? BASE_PATH : ''; ?>/">&larr; Назад до каталогу</a></p>
     </div>
 </div>

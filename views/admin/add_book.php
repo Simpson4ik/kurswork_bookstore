@@ -39,7 +39,7 @@
             <input type="hidden" id="publisher_id" name="publisher_id" value="">
             <div id="publishers-list-container" class="dropdown-search-list">
                 <?php foreach ($publishers as $publisher): ?>
-                    <div class="publisher-item" data-id="<?php echo $publisher['publisher_id']; ?>" data-name="<?php echo htmlspecialchars($publisher['publisher_name']); ?>" style="padding: 8px; cursor: pointer; border-radius: 6px; transition: background 0.2s;">
+                    <div class="publisher-item" data-id="<?php echo htmlspecialchars($publisher['publisher_id']); ?>" data-name="<?php echo htmlspecialchars($publisher['publisher_name']); ?>" style="padding: 8px; cursor: pointer; border-radius: 6px; transition: background 0.2s;">
                         <?php echo htmlspecialchars($publisher['publisher_name']); ?>
                     </div>
                 <?php endforeach; ?>
@@ -57,7 +57,7 @@
                     <?php foreach ($authors as $author): ?>
                         <?php $fullName = $author['last_name'] . ' ' . $author['first_name']; ?>
                         <label>
-                            <input type="checkbox" name="authors[]" value="<?php echo $author['author_id']; ?>" class="author-item-checkbox" data-name="<?php echo htmlspecialchars($fullName); ?>">
+                            <input type="checkbox" name="authors[]" value="<?php echo htmlspecialchars($author['author_id']); ?>" class="author-item-checkbox" data-name="<?php echo htmlspecialchars($fullName); ?>">
                             <?php echo htmlspecialchars($fullName); ?>
                         </label>
                     <?php endforeach; ?>
@@ -77,7 +77,7 @@
                 <?php if(!empty($genres)): ?>
                     <?php foreach ($genres as $genre): ?>
                         <label>
-                            <input type="checkbox" name="genres[]" value="<?php echo $genre['genre_id']; ?>" class="genre-item-checkbox" data-name="<?php echo htmlspecialchars($genre['genre_name']); ?>">
+                            <input type="checkbox" name="genres[]" value="<?php echo htmlspecialchars($genre['genre_id']); ?>" class="genre-item-checkbox" data-name="<?php echo htmlspecialchars($genre['genre_name']); ?>">
                             <?php echo htmlspecialchars($genre['genre_name']); ?>
                         </label>
                     <?php endforeach; ?>
@@ -90,4 +90,4 @@
 
     <button type="submit">Зберегти книгу</button>
 </form>
-<p><a href="/coursework/admin/dashboard">Повернутися в адмінку</a></p>
+<p><a href="<?php echo defined('BASE_PATH') ? BASE_PATH : ''; ?>/admin/dashboard">Повернутися в адмінку</a></p>

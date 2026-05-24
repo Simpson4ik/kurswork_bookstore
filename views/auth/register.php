@@ -1,7 +1,7 @@
 <?php /** @var string $title */ ?>
 <h2>Реєстрація нового користувача</h2>
 
-<form action="/coursework/register/store" method="POST" id="register-form">
+<form action="<?php echo defined('BASE_PATH') ? BASE_PATH : ''; ?>/register/store" method="POST" id="register-form">
     <?php if (!empty($error)): ?>
         <div style="background-color: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); color: var(--danger); padding: 12px; border-radius: 8px; margin-bottom: 18px; font-weight: 600; font-size: 14px; text-align: center;">
             ✕ <?php echo htmlspecialchars($error); ?>
@@ -32,4 +32,4 @@
     <button type="submit" id="btn-register">Зареєструватися</button>
 </form>
 
-<p>Вже маєте акаунт? <a href="/coursework/login">Увійти тут</a></p>
+<p>Вже маєте акаунт? <a href="<?php echo defined('BASE_PATH') ? BASE_PATH : ''; ?>/login">Увійти тут</a></p>

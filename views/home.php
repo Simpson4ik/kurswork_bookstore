@@ -58,13 +58,13 @@
                     <li class="book-card">
                         <div class="book-cover-container">
                             <?php if (!empty($book['cover_image'])): ?>
-                                <img src="/coursework/public/uploads/<?php echo $book['cover_image']; ?>" alt="<?php echo htmlspecialchars($book['title']); ?>" class="book-cover">
+                                <img src="<?php echo defined('BASE_PATH') ? BASE_PATH : ''; ?>/public/uploads/<?php echo $book['cover_image']; ?>" alt="<?php echo htmlspecialchars($book['title']); ?>" class="book-cover">
                             <?php else: ?>
                                 <div class="book-cover-placeholder">📚 Обкладинка відсутня</div>
                             <?php endif; ?>
                         </div>
                         <h3>
-                            <a href="/coursework/book/<?php echo $book['book_id']; ?>">
+                            <a href="<?php echo defined('BASE_PATH') ? BASE_PATH : ''; ?>/book/<?php echo $book['book_id']; ?>">
                                 <?php echo htmlspecialchars($book['title']); ?>
                             </a>
                         </h3>
@@ -83,17 +83,17 @@
             <?php if ($totalPages > 1): ?>
                 <div class="pagination">
                     <?php if ($currentPage > 1): ?>
-                        <a href="/coursework/?page=<?php echo $currentPage - 1; ?>" class="page-link">&larr; Назад</a>
+                        <a href="<?php echo defined('BASE_PATH') ? BASE_PATH : ''; ?>/?page=<?php echo $currentPage - 1; ?>" class="page-link">&larr; Назад</a>
                     <?php endif; ?>
 
                     <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                        <a href="/coursework/?page=<?php echo $i; ?>" class="page-link <?php echo $i === $currentPage ? 'active' : ''; ?>">
+                        <a href="<?php echo defined('BASE_PATH') ? BASE_PATH : ''; ?>/?page=<?php echo $i; ?>" class="page-link <?php echo $i === $currentPage ? 'active' : ''; ?>">
                             <?php echo $i; ?>
                         </a>
                     <?php endfor; ?>
 
                     <?php if ($currentPage < $totalPages): ?>
-                        <a href="/coursework/?page=<?php echo $currentPage + 1; ?>" class="page-link">Вперед &rarr;</a>
+                        <a href="<?php echo defined('BASE_PATH') ? BASE_PATH : ''; ?>/?page=<?php echo $currentPage + 1; ?>" class="page-link">Вперед &rarr;</a>
                     <?php endif; ?>
                 </div>
             <?php endif; ?>

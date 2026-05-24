@@ -13,8 +13,8 @@
     <aside class="catalog-sidebar">
         <h3>Nav-Панель</h3>
         <div class="filter-section">
-            <a href="/coursework/profile" class="page-link active" style="display: block; text-align: center; margin-bottom: 10px;">👤 Мій Профіль</a>
-            <a href="/coursework/orders" class="page-link" style="display: block; text-align: center;">📦 Мої Замовлення</a>
+            <a href="<?php echo defined('BASE_PATH') ? BASE_PATH : ''; ?>/profile" class="page-link active" style="display: block; text-align: center; margin-bottom: 10px;">👤 Мій Профіль</a>
+            <a href="<?php echo defined('BASE_PATH') ? BASE_PATH : ''; ?>/orders" class="page-link" style="display: block; text-align: center;">📦 Мої Замовлення</a>
         </div>
     </aside>
 

@@ -1,6 +1,5 @@
-<?php /** @var string $title */ ?>
 <h2>Вхід у систему</h2>
-<form action="/coursework/login/authenticate" method="POST">
+<form action="<?php echo defined('BASE_PATH') ? BASE_PATH : ''; ?>/login/authenticate" method="POST">
     <?php if (!empty($error)): ?>
         <div style="background-color: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); color: var(--danger); padding: 12px; border-radius: 8px; margin-bottom: 18px; font-weight: 600; font-size: 14px; text-align: center;">
             ✕ <?php echo htmlspecialchars($error); ?>
@@ -23,4 +22,4 @@
     </div>
     <button type="submit">Увійти</button>
 </form>
-<p>Немає акаунту? <a href="/coursework/register">Зареєстроватися</a></p>
+<p>Немає акаунту? <a href="<?php echo defined('BASE_PATH') ? BASE_PATH : ''; ?>/register">Зареєструватися</a></p>

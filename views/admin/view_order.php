@@ -4,7 +4,7 @@
 ?>
 <div class="catalog-header-section">
     <div class="catalog-title-group">
-        <h2>🔍 Деталі замовлення #<?php echo $order['order_id']; ?></h2>
+        <h2>🔍 Деталі замовлення #<?php echo htmlspecialchars($order['order_id']); ?></h2>
         <p>Повна інформація про покупця, склад товарів та фінансові підсумки транзакції</p>
     </div>
 </div>
@@ -18,10 +18,10 @@
             <p><strong>Email:</strong> <?php echo htmlspecialchars($order['email']); ?></p>
         </div>
         <div class="filter-section" style="border-top: 1px solid var(--border); padding-top: 15px;">
-            <p><strong>Дата:</strong> <?php echo date('d.m.Y H:i', strtotime($order['order_date'])); ?></p>
-            <p><strong>Статус:</strong> <span style="color: var(--neon-glow); font-weight: bold;"><?php echo $order['status']; ?></span></p>
+            <p><strong>Дата:</strong> <?php echo htmlspecialchars(date('d.m.Y H:i', strtotime($order['order_date']))); ?></p>
+            <p><strong>Статус:</strong> <span style="color: var(--neon-glow); font-weight: bold;"><?php echo htmlspecialchars($order['status']); ?></span></p>
         </div>
-        <a href="/coursework/admin/orders" class="page-link" style="display: block; text-align: center; margin-top: 20px;">&larr; Назад до списку</a>
+        <a href="<?php echo defined('BASE_PATH') ? BASE_PATH : ''; ?>/admin/orders" class="page-link" style="display: block; text-align: center; margin-top: 20px;">&larr; Назад до списку</a>
     </aside>
 
     <main class="catalog-main">
@@ -39,16 +39,16 @@
             <?php foreach ($order['items'] as $item): ?>
                 <tr>
                     <td><?php echo htmlspecialchars($item['title'] ?: 'Видалена книга'); ?></td>
-                    <td><?php echo $item['price']; ?> грн</td>
-                    <td style="color: var(--neon-glow); font-weight: bold;"><?php echo $item['quantity']; ?> шт.</td>
-                    <td><?php echo $item['price'] * $item['quantity']; ?> грн</td>
+                    <td><?php echo htmlspecialchars($item['price']); ?> грн</td>
+                    <td style="color: var(--neon-glow); font-weight: bold;"><?php echo htmlspecialchars($item['quantity']); ?> шт.</td>
+                    <td><?php echo htmlspecialchars($item['price'] * $item['quantity']); ?> грн</td>
                 </tr>
             <?php endforeach; ?>
             </tbody>
         </table>
 
         <div style="text-align: right; margin-top: 20px; font-size: 20px; font-weight: bold;">
-            Разом до сплати: <span style="color: var(--success);"><?php echo $order['total_amount']; ?> грн</span>
+            Разом до сплати: <span style="color: var(--success);"><?php echo htmlspecialchars($order['total_amount']); ?> грн</span>
         </div>
     </main>
 </div>

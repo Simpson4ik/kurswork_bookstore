@@ -13,6 +13,7 @@ class Response
         $this->statusCode = $code;
         return $this;
     }
+
     public function addHeader(string $header): self
     {
         $this->headers[] = $header;
@@ -25,10 +26,12 @@ class Response
             $this->content = $content;
         }
 
-        http_response_code($this->statusCode);
+        if (!headers_sent()) {
+            http_response_code($this->statusCode);
 
-        foreach ($this->headers as $header) {
-            header($header);
+            foreach ($this->headers as $header) {
+                header($header);
+            }
         }
 
         if (ob_get_level() > 0) {
@@ -38,10 +41,11 @@ class Response
         echo $this->content;
         exit;
     }
+
     public function json(array $data, int $status = 200): void
     {
         $this->setStatus($status)
             ->addHeader('Content-Type: application/json; charset=utf-8')
-            ->send(json_encode($data, JSON_UNESCAPED_UNICODE));
+            ->send(json_encode($data, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR));
     }
 }

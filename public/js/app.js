@@ -1,15 +1,28 @@
 document.addEventListener('DOMContentLoaded', function() {
 
-    document.addEventListener('click', function(e) {
-        const button = e.target.closest('.btn-add-to-cart');
-        if (button) {
-            e.preventDefault();
-            const bookId = button.getAttribute('data-book-id');
-            const originalText = button.innerText;
-            button.innerText = '⏳ Додавання...';
-            button.disabled = true;
+    const basePath = window.BASE_PATH !== undefined ? window.BASE_PATH : '/coursework';
 
-            fetch('/coursework/cart/add-ajax', {
+    function updateSelectColor(select) {
+        const val = select.value;
+        if (val === 'Нове') select.style.borderColor = '#38bdf8';
+        else if (val === 'Підтверджено') select.style.borderColor = '#fbbf24';
+        else if (val === 'Відправлено') select.style.borderColor = '#a78bfa';
+        else if (val === 'Виконано') select.style.borderColor = '#10b981';
+        else if (val === 'Скасовано') select.style.borderColor = '#ef4444';
+    }
+
+    document.querySelectorAll('.admin-status-select').forEach(updateSelectColor);
+
+    document.addEventListener('click', function(e) {
+        const addButton = e.target.closest('.btn-add-to-cart');
+        if (addButton) {
+            e.preventDefault();
+            const bookId = addButton.getAttribute('data-book-id');
+            const originalText = addButton.innerText;
+            addButton.innerText = '⏳ Додавання...';
+            addButton.disabled = true;
+
+            fetch(`${basePath}/cart/add-ajax`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ book_id: bookId })
@@ -17,67 +30,34 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        button.innerText = '✅ Додано!';
-                        button.style.backgroundColor = 'var(--success)';
+                        addButton.innerText = '✅ Додано!';
+                        addButton.style.backgroundColor = 'var(--success)';
                         setTimeout(() => {
-                            button.innerText = originalText;
-                            button.style.backgroundColor = '';
-                            button.disabled = false;
+                            addButton.innerText = originalText;
+                            addButton.style.backgroundColor = '';
+                            addButton.disabled = false;
                         }, 2000);
                     } else {
                         alert('Помилка: ' + data.message);
-                        button.innerText = originalText;
-                        button.disabled = false;
+                        addButton.innerText = originalText;
+                        addButton.disabled = false;
                     }
                 })
                 .catch(error => {
                     console.error('Помилка мережі:', error);
-                    button.innerText = originalText;
-                    button.disabled = false;
+                    addButton.innerText = originalText;
+                    addButton.disabled = false;
                 });
+            return;
         }
-    });
 
-    const qtyInputs = document.querySelectorAll('.cart-qty-input');
-    qtyInputs.forEach(input => {
-        input.addEventListener('change', function() {
-            const bookId = this.getAttribute('data-book-id');
-            const newQty = parseInt(this.value);
-            fetch('/coursework/cart/update-ajax', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ book_id: bookId, quantity: newQty })
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        this.value = data.quantity;
-                        if (data.quantity === 0) {
-                            const row = document.getElementById(`cart-row-${bookId}`);
-                            if (row) row.remove();
-                        } else {
-                            document.getElementById(`subtotal-${bookId}`).innerText = data.subtotal;
-                        }
-                        document.getElementById('grand-total').innerText = data.total_price;
-                        if (data.cart_empty) {
-                            document.getElementById('cart-container').innerHTML = '<p style="color: var(--text-muted);">Ваш кошик порожній.</p>';
-                        }
-                    } else {
-                        alert('Помилка оновлення: ' + data.message);
-                    }
-                })
-                .catch(error => console.error('Помилка мережі:', error));
-        });
-    });
-
-    const removeButtons = document.querySelectorAll('.btn-remove-item');
-    removeButtons.forEach(button => {
-        button.addEventListener('click', function(e) {
+        const removeButton = e.target.closest('.btn-remove-item');
+        if (removeButton) {
             e.preventDefault();
             if (!confirm('Видалити книгу?')) return;
-            const bookId = this.getAttribute('data-book-id');
+            const bookId = removeButton.getAttribute('data-book-id');
             const row = document.getElementById(`cart-row-${bookId}`);
-            fetch('/coursework/cart/remove-ajax', {
+            fetch(`${basePath}/cart/remove-ajax`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ book_id: bookId })
@@ -97,9 +77,90 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 })
                 .catch(error => console.error('Помилка мережі:', error));
-        });
+        }
     });
 
+    document.addEventListener('change', function(e) {
+        if (e.target.classList.contains('cart-qty-input')) {
+            const input = e.target;
+            const bookId = input.getAttribute('data-book-id');
+            const newQty = parseInt(input.value);
+            fetch(`${basePath}/cart/update-ajax`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ book_id: bookId, quantity: newQty })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        input.value = data.quantity;
+                        if (data.quantity === 0) {
+                            const row = document.getElementById(`cart-row-${bookId}`);
+                            if (row) row.remove();
+                        } else {
+                            document.getElementById(`subtotal-${bookId}`).innerText = data.subtotal;
+                        }
+                        document.getElementById('grand-total').innerText = data.total_price;
+                        if (data.cart_empty) {
+                            document.getElementById('cart-container').innerHTML = '<p style="color: var(--text-muted);">Ваш кошик порожній.</p>';
+                        }
+                    } else {
+                        alert('Помилка оновлення: ' + data.message);
+                    }
+                })
+                .catch(error => console.error('Помилка мережі:', error));
+            return;
+        }
+
+        if (e.target.classList.contains('admin-status-select')) {
+            const select = e.target;
+            const orderId = select.getAttribute('data-order-id');
+            const newStatus = select.value;
+
+            fetch(`${basePath}/admin/orders/update-status-ajax`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ order_id: orderId, status: newStatus })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        updateSelectColor(select);
+                        alert(data.message);
+                    } else {
+                        alert('Помилка: ' + data.message);
+                    }
+                })
+                .catch(error => console.error('Помилка мережі:', error));
+        }
+    });
+
+    const deleteBookButton = e.target.closest('.btn-delete-book');
+    if (deleteBookButton) {
+        e.preventDefault();
+        if (!confirm('Ви впевнені, що хочете повністю видалити цю книгу з каталогу?')) return;
+
+        const bookId = deleteBookButton.getAttribute('data-book-id');
+        const row = document.getElementById(`book-row-${bookId}`);
+        const deleteUrl = deleteBookButton.getAttribute('href');
+
+        fetch(deleteUrl)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    if (row) {
+                        row.style.transition = 'opacity 0.3s';
+                        row.style.opacity = '0';
+                        setTimeout(() => row.remove(), 300);
+                    }
+                } else {
+                    alert('Помилка: ' + data.message);
+                }
+            })
+            .catch(error => console.error('Помилка мережі:', error));
+        return;
+    }
     const emailInput = document.getElementById('email');
     const emailError = document.getElementById('email-error');
     const submitBtn = document.getElementById('btn-register');
@@ -115,7 +176,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             isEmailChecking = true;
             submitBtn.disabled = true;
-            fetch('/coursework/register/check-email', {
+            fetch(`${basePath}/register/check-email`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email: emailValue })
@@ -175,7 +236,7 @@ document.addEventListener('DOMContentLoaded', function() {
         addBookForm.addEventListener('submit', function(e) {
             e.preventDefault();
             const formData = new FormData(this);
-            fetch('/coursework/admin/book/store', {
+            fetch(`${basePath}/admin/book/store`, {
                 method: 'POST',
                 body: formData
             })
@@ -183,7 +244,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(data => {
                     if (data.success) {
                         alert(data.message);
-                        window.location.href = '/coursework/admin/dashboard';
+                        window.location.href = `${basePath}/admin/dashboard`;
                     } else {
                         alert('Помилка: ' + data.message);
                     }
@@ -198,7 +259,7 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             const bookId = this.getAttribute('data-book-id');
             const formData = new FormData(this);
-            fetch(`/coursework/admin/book/update/${bookId}`, {
+            fetch(`${basePath}/admin/book/update/${bookId}`, {
                 method: 'POST',
                 body: formData
             })
@@ -206,7 +267,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(data => {
                     if (data.success) {
                         alert(data.message);
-                        window.location.href = '/coursework/admin/dashboard';
+                        window.location.href = `${basePath}/admin/dashboard`;
                     } else {
                         alert('Помилка: ' + data.message);
                     }
@@ -214,6 +275,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 .catch(error => console.error('Помилка мережі:', error));
         });
     }
+
 
     function initTagDropdownSystem(inputId, containerListId, badgesContainerId, checkboxClass) {
         const input = document.getElementById(inputId);
@@ -350,7 +412,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const minPriceInput = document.getElementById('filter-min-price');
     const maxPriceInput = document.getElementById('filter-max-price');
     const inStockCheckbox = document.getElementById('filter-in-stock');
-    const genreCheckboxes = document.querySelectorAll('.filter-genre-checkbox');
 
     const booksGrid = document.querySelector('.books-grid');
     const pagination = document.querySelector('.pagination');
@@ -367,7 +428,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const checkedBoxes = document.querySelectorAll('.filter-genre-checkbox:checked');
         checkedBoxes.forEach(box => selectedGenres.push(box.value));
 
-        let url = `/coursework/books/search?q=${encodeURIComponent(query)}`;
+        let url = `${basePath}/books/search?q=${encodeURIComponent(query)}`;
         if (minPrice !== '') url += `&min_price=${encodeURIComponent(minPrice)}`;
         if (maxPrice !== '') url += `&max_price=${encodeURIComponent(maxPrice)}`;
         if (inStock) url += `&in_stock=true`;
@@ -419,7 +480,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             let coverHtml = '<div class="book-cover-placeholder">📚 Обкладинка відсутня</div>';
             if (book.cover_image) {
-                coverHtml = `<img src="/coursework/public/uploads/${book.cover_image}" alt="${escapeHtml(book.title)}" class="book-cover">`;
+                coverHtml = `<img src="${basePath}/public/uploads/${book.cover_image}" alt="${escapeHtml(book.title)}" class="book-cover">`;
             }
 
             li.innerHTML = `
@@ -427,7 +488,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     ${coverHtml}
                 </div>
                 <h3>
-                    <a href="/coursework/book/${book.book_id}">
+                    <a href="${basePath}/book/${book.book_id}">
                         ${escapeHtml(book.title)}
                     </a>
                 </h3>
@@ -454,8 +515,6 @@ document.addEventListener('DOMContentLoaded', function() {
             .replace(/'/g, '&#039;');
     }
 
-
-
     const profileForm = document.getElementById('profile-update-form');
     const profileStatus = document.getElementById('profile-status-message');
     const saveProfileBtn = document.getElementById('btn-save-profile');
@@ -476,7 +535,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 email: document.getElementById('email').value.trim()
             };
 
-            fetch('/coursework/profile/update-ajax', {
+            fetch(`${basePath}/profile/update-ajax`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)

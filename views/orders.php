@@ -4,7 +4,7 @@
 ?>
 <div class="catalog-header-section">
     <div class="catalog-title-group">
-        <h2>📦 <?php echo $title; ?></h2>
+        <h2>📦 <?php echo htmlspecialchars($title); ?></h2>
         <p>Відстежуйте статус поточних покупок та переглядайте повний архів ваших міжгалактичних замовлень</p>
     </div>
 </div>
@@ -22,9 +22,9 @@
             <div style="background-color: var(--panel-galaxy); border: 1px solid var(--border); border-radius: var(--radius); padding: 25px; margin-bottom: 25px; box-shadow: var(--shadow);">
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 15px; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
                     <div>
-                        <span style="font-size: 18px; font-weight: bold; color: var(--text-main);">Замовлення #<?php echo $order['order_id']; ?></span>
+                        <span style="font-size: 18px; font-weight: bold; color: var(--text-main);">Замовлення #<?php echo htmlspecialchars($order['order_id']); ?></span>
                         <span style="color: var(--text-muted); font-size: 14px; margin-left: 15px;">
-                            📆 <?php echo isset($order['order_date']) ? date('d.m.Y H:i', strtotime($order['order_date'])) : 'Не вказано'; ?>
+                            📆 <?php echo isset($order['order_date']) ? htmlspecialchars(date('d.m.Y H:i', strtotime($order['order_date']))) : 'Не вказано'; ?>
                         </span>
                     </div>
                     <div>
@@ -47,8 +47,8 @@
                         <?php foreach ($order['items'] as $item): ?>
                             <tr style="border-bottom: 1px dotted rgba(255,255,255,0.05);">
                                 <td style="padding: 10px 0; color: var(--text-main); font-weight: 500;"><?php echo htmlspecialchars($item['title']); ?></td>
-                                <td style="padding: 10px 0; text-align: center; color: var(--accent-blue); font-weight: bold;"><?php echo $item['quantity']; ?> шт.</td>
-                                <td style="padding: 10px 0; text-align: right; color: var(--text-main);"><?php echo $item['price']; ?> грн</td>
+                                <td style="padding: 10px 0; text-align: center; color: var(--accent-blue); font-weight: bold;"><?php echo htmlspecialchars($item['quantity']); ?> шт.</td>
+                                <td style="padding: 10px 0; text-align: right; color: var(--text-main);"><?php echo htmlspecialchars($item['price']); ?> грн</td>
                             </tr>
                         <?php endforeach; ?>
                         </tbody>
@@ -58,7 +58,7 @@
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding-top: 10px;">
                     <span style="color: var(--text-muted); font-size: 14px;">Спосіб оплати: При отриманні</span>
                     <span style="font-size: 16px; font-weight: bold; color: var(--text-main);">
-                        Разом: <span style="color: var(--success); font-size: 18px;"><?php echo $order['total_amount']; ?> грн</span>
+                        Разом: <span style="color: var(--success); font-size: 18px;"><?php echo htmlspecialchars($order['total_amount']); ?> грн</span>
                     </span>
                 </div>
             </div>
@@ -66,7 +66,7 @@
     <?php else: ?>
         <div style="text-align: center; padding: 60px 20px; background-color: var(--panel-galaxy); border: 1px solid var(--border); border-radius: var(--radius);">
             <p style="color: var(--text-muted); font-style: italic; font-size: 16px; margin-bottom: 20px;">Ви ще не оформили жодного замовлення.</p>
-            <a href="/coursework/" class="page-link" style="display: inline-block;">📚 Перейти до каталогу книг</a>
+            <a href="<?php echo defined('BASE_PATH') ? BASE_PATH : ''; ?>/" class="page-link" style="display: inline-block;">📚 Перейти до каталогу книг</a>
         </div>
     <?php endif; ?>
 </div>

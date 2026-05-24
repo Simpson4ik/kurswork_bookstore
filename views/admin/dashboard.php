@@ -4,7 +4,7 @@
 ?>
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
         <h2>Керування каталогом книг</h2>
-        <a href="/coursework/admin/book/add" style="text-decoration: none;">
+        <a href="<?php echo defined('BASE_PATH') ? BASE_PATH : ''; ?>/admin/book/add" style="text-decoration: none;">
             <button type="button" style="margin: 0; width: auto; background-color: var(--success);">➕ Додати нову книгу</button>
         </a>
     </div>
@@ -26,20 +26,21 @@
         </thead>
         <tbody>
         <?php foreach ($books as $book): ?>
-            <tr>
-                <td><?php echo $book['book_id']; ?></td>
+            <tr id="book-row-<?php echo htmlspecialchars($book['book_id']); ?>">
+                <td><?php echo htmlspecialchars($book['book_id']); ?></td>
                 <td><strong><?php echo htmlspecialchars($book['title']); ?></strong></td>
                 <td style="color: purple;"><?php echo htmlspecialchars($book['authors_list'] ?: '—'); ?></td>
                 <td style="color: orange;"><?php echo htmlspecialchars($book['genres_list'] ?: '—'); ?></td>
                 <td><?php echo htmlspecialchars($book['isbn']); ?></td>
                 <td><?php echo htmlspecialchars($book['price']); ?> грн</td>
-                <td><?php echo $book['stock_quantity']; ?> шт.</td>
+                <td><?php echo htmlspecialchars($book['stock_quantity']); ?> шт.</td>
                 <td><?php echo htmlspecialchars($book['publisher_name']); ?></td>
                 <td>
-                    <a href="/coursework/admin/book/edit/<?php echo $book['book_id']; ?>" style="color: blue; margin-right: 15px;">Редагувати</a>
-                    <a href="/coursework/admin/book/delete/<?php echo $book['book_id']; ?>"
-                       style="color: red;"
-                       onclick="return confirm('Ви впевнені?')">Видалити</a>
+                    <a href="<?php echo defined('BASE_PATH') ? BASE_PATH : ''; ?>/admin/book/edit/<?php echo htmlspecialchars($book['book_id']); ?>" style="color: blue; margin-right: 15px;">Редагувати</a>
+                    <a href="<?php echo defined('BASE_PATH') ? BASE_PATH : ''; ?>/admin/book/delete/<?php echo htmlspecialchars($book['book_id']); ?>"
+                       class="btn-delete-book"
+                       data-book-id="<?php echo htmlspecialchars($book['book_id']); ?>"
+                       style="color: red;">Видалити</a>
                 </td>
             </tr>
         <?php endforeach; ?>

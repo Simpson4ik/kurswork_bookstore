@@ -3,27 +3,28 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
+    <script>window.BASE_PATH = "<?php echo defined('BASE_PATH') ? BASE_PATH : ''; ?>";</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo htmlspecialchars($title ?? 'Bookstore X'); ?></title>
-    <link rel="stylesheet" href="/coursework/public/css/style.css?v=<?php echo $GLOBALS['config']['version'] ?? '1.0.0'; ?>">
+    <link rel="stylesheet" href="<?php echo defined('BASE_PATH') ? BASE_PATH : ''; ?>/public/css/style.css">
 </head>
 <body>
 <header>
-    <h1><a href="/coursework/" style="text-decoration: none; color: inherit;">🌌 Bookstore X</a></h1>
+    <h1><a href="<?php echo defined('BASE_PATH') ? BASE_PATH : ''; ?>/" style="text-decoration: none; color: inherit;">🌌 Bookstore X</a></h1>
     <nav>
-        <a href="/coursework/">📋 Каталог</a>
-        <a href="/coursework/cart">🛒 Кошик</a>
+        <a href="<?php echo defined('BASE_PATH') ? BASE_PATH : ''; ?>/">📋 Каталог</a>
+        <a href="<?php echo defined('BASE_PATH') ? BASE_PATH : ''; ?>/cart">🛒 Кошик</a>
         <?php if (isset($_SESSION['user'])): ?>
-            <a href="/coursework/orders">📦 Замовлення</a>
+            <a href="<?php echo defined('BASE_PATH') ? BASE_PATH : ''; ?>/orders">📦 Замовлення</a>
             <?php if ($_SESSION['user']['role'] === 'admin'): ?>
-                <a href="/coursework/admin/dashboard" class="admin-link">👨‍💻 Адмінка</a>
+                <a href="<?php echo defined('BASE_PATH') ? BASE_PATH : ''; ?>/admin/dashboard" class="admin-link">👨‍💻 Admin-панель</a>
             <?php endif; ?>
-            <a href="/coursework/profile" class="profile-link">👤 Кабінет</a>
-            <a href="/coursework/logout" class="logout-link">🚪 Вихід</a>
+            <a href="<?php echo defined('BASE_PATH') ? BASE_PATH : ''; ?>/profile" class="profile-link">👤 Кабінет</a>
+            <a href="<?php echo defined('BASE_PATH') ? BASE_PATH : ''; ?>/logout" class="logout-link">🚪 Вихід</a>
         <?php else: ?>
-            <a href="/coursework/login">🔑 Вхід</a>
-            <a href="/coursework/register">📝 Реєстрація</a>
+            <a href="<?php echo defined('BASE_PATH') ? BASE_PATH : ''; ?>/login">🔑 Вхід</a>
+            <a href="<?php echo defined('BASE_PATH') ? BASE_PATH : ''; ?>/register">📝 Реєстрація</a>
         <?php endif; ?>
     </nav>
 </header>
@@ -37,6 +38,6 @@
         &copy; <?php echo date('Y'); ?> Bookstore X. Усі права захищено міжгалактичним правом.
     </p>
 </footer>
-<script src="/coursework/public/js/app.js?v=<?php echo $GLOBALS['config']['version'] ?? '1.0.0'; ?>"></script>
+<script src="<?php echo defined('BASE_PATH') ? BASE_PATH : ''; ?>/public/js/app.js"></script>
 </body>
 </html>
