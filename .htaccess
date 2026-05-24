@@ -1,8 +1,15 @@
+Options -Indexes
+
 RewriteEngine On
 
+# 1. Залізобетонний захист системних директорій та файлів від зловмисників
+RewriteRule ^(\.git|app|config|storage|views) - [F,L]
+RewriteRule \.(sql|log|ini|conf|json|md)$ - [F,L]
+
+# 2. Пряме перенаправлення кореня сайту на Front Controller
 RewriteRule ^$ public/index.php [L]
 
+# 3. Маршрутизація всіх інших сторінок та асинхронних AJAX-запитів
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-
 RewriteRule ^(.*)$ public/index.php?url=$1 [QSA,L]

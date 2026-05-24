@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Core\Controller;
 use App\Models\Customer;
 use App\Models\Order;
+use App\Core\Response;
 
 class ProfileController extends Controller
 {
@@ -16,64 +17,12 @@ class ProfileController extends Controller
         }
 
         $customerModel = new Customer();
-        $userData = $customerModel->getById((int)$_SESSION['user']['id']);
-
-        if (!$userData) {
-            header('Location: /coursework/logout');
-            exit;
-        }
+        $user = $customerModel->getById((int)$_SESSION['user']['id']);
 
         $this->view('profile', [
             'title' => 'Особистий кабінет',
-            'user' => $userData
+            'user' => $user
         ]);
-    }
-
-    public function updateAjax(): void
-    {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_SESSION['user'])) {
-            header('Content-Type: application/json');
-            echo json_encode(['success' => false, 'message' => 'Несанкціонований доступ або невірний метод.']);
-            exit;
-        }
-
-        $input = json_decode(file_get_contents('php://input'), true);
-
-        $firstName = isset($input['first_name']) ? trim($input['first_name']) : '';
-        $lastName = isset($input['last_name']) ? trim($input['last_name']) : '';
-        $phone = isset($input['phone']) ? trim($input['phone']) : '';
-        $email = isset($input['email']) ? trim($input['email']) : '';
-
-        if (empty($firstName) || empty($lastName) || empty($email)) {
-            header('Content-Type: application/json');
-            echo json_encode(['success' => false, 'message' => 'Будь ласка, заповніть обов\'язкові поля (Ім\'я, Прізвище, Email).']);
-            exit;
-        }
-
-        $customerModel = new Customer();
-        $existingUser = $customerModel->getByEmail($email);
-        if ($existingUser && (int)$existingUser['customer_id'] !== (int)$_SESSION['user']['id']) {
-            header('Content-Type: application/json');
-            echo json_encode(['success' => false, 'message' => 'Цей Email вже використовується іншим акаунтом.']);
-            exit;
-        }
-
-        $success = $customerModel->updateProfile((int)$_SESSION['user']['id'], [
-            'first_name' => $firstName,
-            'last_name' => $lastName,
-            'phone' => $phone,
-            'email' => $email
-        ]);
-
-        if ($success) {
-            $_SESSION['user']['name'] = $firstName;
-            header('Content-Type: application/json');
-            echo json_encode(['success' => true, 'message' => 'Дані вашого профілю успішно оновлено!']);
-        } else {
-            header('Content-Type: application/json');
-            echo json_encode(['success' => false, 'message' => 'Не вдалося зберегти зміни профілю в базі даних.']);
-        }
-        exit;
     }
 
     public function orders(): void
@@ -87,8 +36,42 @@ class ProfileController extends Controller
         $orders = $orderModel->getByCustomerId((int)$_SESSION['user']['id']);
 
         $this->view('orders', [
-            'title' => 'Мої замовлення',
+            'title' => 'Історія моїх замовлень',
             'orders' => $orders
         ]);
+    }
+
+    public function updateAjax(): void
+    {
+        $response = new Response();
+        $input = json_decode(file_get_contents('php://input'), true);
+
+        if (!isset($_SESSION['user'])) {
+            $response->json(['success' => false, 'message' => 'Неавторизований доступ'], 401);
+        }
+
+        $firstName = isset($input['first_name']) ? trim($input['first_name']) : '';
+        $lastName = isset($input['last_name']) ? trim($input['last_name']) : '';
+        $phone = isset($input['phone']) ? trim($input['phone']) : '';
+        $email = isset($input['email']) ? trim($input['email']) : '';
+
+        if (empty($firstName) || empty($lastName) || empty($email)) {
+            $response->json(['success' => false, 'message' => "Заповніть обов'язкові поля"], 400);
+        }
+
+        $customerId = (int)$_SESSION['user']['id'];
+        $customerModel = new Customer();
+
+        if ($customerModel->updateProfile($customerId, [
+            'first_name' => $firstName,
+            'last_name' => $lastName,
+            'phone' => $phone,
+            'email' => $email
+        ])) {
+            $_SESSION['user']['name'] = $firstName;
+            $response->json(['success' => true, 'message' => 'Профіль успешно оновлено!']);
+        } else {
+            $response->json(['success' => false, 'message' => 'Помилка оновлення даних в БД'], 500);
+        }
     }
 }

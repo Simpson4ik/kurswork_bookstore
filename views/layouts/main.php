@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo htmlspecialchars($title ?? 'Bookstore X'); ?></title>
-    <link rel="stylesheet" href="/coursework/public/css/style.css?v=4">
+    <link rel="stylesheet" href="/coursework/public/css/style.css?v=<?php echo $GLOBALS['config']['version'] ?? '1.0.0'; ?>">
 </head>
 <body>
 <header>
@@ -37,6 +37,6 @@
         &copy; <?php echo date('Y'); ?> Bookstore X. Усі права захищено міжгалактичним правом.
     </p>
 </footer>
-<script src="/coursework/public/js/app.js?v=2"></script>
+<script src="/coursework/public/js/app.js?v=<?php echo $GLOBALS['config']['version'] ?? '1.0.0'; ?>"></script>
 </body>
 </html>

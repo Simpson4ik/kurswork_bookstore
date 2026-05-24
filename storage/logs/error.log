@@ -1,0 +1,15 @@
+[23-May-2026 22:02:15 UTC] Тестова аномалія ядерного двигуна
+#0 [internal function]: App\Controllers\HomeController->index()
+#1 C:\wamp64\www\coursework\app\Core\Router.php(39): call_user_func_array(Array, Array)
+#2 C:\wamp64\www\coursework\public\index.php(130): App\Core\Router->dispatch('', 'GET')
+#3 {main}
+[23-May-2026 22:02:15 UTC] Тестова аномалія ядерного двигуна
+#0 [internal function]: App\Controllers\HomeController->index()
+#1 C:\wamp64\www\coursework\app\Core\Router.php(39): call_user_func_array(Array, Array)
+#2 C:\wamp64\www\coursework\public\index.php(130): App\Core\Router->dispatch('', 'GET')
+#3 {main}
+[23-May-2026 23:15:16 UTC] Критичний збій бази даних кошика
+#0 [internal function]: App\Controllers\CartController->addAjax()
+#1 C:\wamp64\www\coursework\app\Core\Router.php(39): call_user_func_array(Array, Array)
+#2 C:\wamp64\www\coursework\public\index.php(130): App\Core\Router->dispatch('cart/add-ajax', 'POST')
+#3 {main}

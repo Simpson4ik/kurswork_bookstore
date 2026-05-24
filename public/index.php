@@ -1,8 +1,38 @@
 <?php
 
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+ob_start();
+
+$config = require __DIR__ . '/../config/app.php';
+
+if ($config['env'] === 'dev') {
+    ini_set('display_errors', 1);
+    ini_set('display_startup_errors', 1);
+    error_reporting(E_ALL);
+} else {
+    ini_set('display_errors', 0);
+    ini_set('display_startup_errors', 0);
+    error_reporting(0);
+
+    $logDir = __DIR__ . '/../storage/logs';
+    if (!is_dir($logDir)) {
+        mkdir($logDir, 0777, true);
+    }
+
+    ini_set('log_errors', 1);
+    ini_set('error_log', $logDir . '/error.log');
+}
+
+define('BASE_PATH', $config['base_path']);
+
+$isProd = ($config['env'] === 'prod');
+session_set_cookie_params([
+    'lifetime' => 0,
+    'path' => BASE_PATH ?: '/',
+    'domain' => $_SERVER['SERVER_NAME'] ?? '',
+    'secure' => $isProd,
+    'httponly' => true,
+    'samesite' => 'Strict'
+]);
 
 session_start();
 
@@ -88,7 +118,7 @@ $router->add('GET', 'cart', [\App\Controllers\CartController::class, 'index']);
 $router->add('GET', 'cart/add/{id}', [\App\Controllers\CartController::class, 'add']);
 $router->add('GET', 'cart/remove/{id}', [\App\Controllers\CartController::class, 'remove']);
 $router->add('POST', 'cart/update', [\App\Controllers\CartController::class, 'update']);
-$router->add('GET', 'cart/checkout', [\App\Controllers\CartController::class, 'checkout']);
+$router->add('POST', 'cart/checkout', [\App\Controllers\CartController::class, 'checkout']);
 $router->add('GET', 'books/search', [\App\Controllers\BookController::class, 'searchAjax']);
 
 $router->add('POST', 'cart/add-ajax', [\App\Controllers\CartController::class, 'addAjax']);
@@ -99,8 +129,35 @@ $router->add('GET', 'orders', [\App\Controllers\ProfileController::class, 'order
 $router->add('GET', 'profile', [\App\Controllers\ProfileController::class, 'index']);
 $router->add('POST', 'profile/update-ajax', [\App\Controllers\ProfileController::class, 'updateAjax']);
 
+$router->add('GET', 'admin/orders', [\App\Controllers\Admin\OrderController::class, 'index']);
+$router->add('GET', 'admin/orders/view/{id}', [\App\Controllers\Admin\OrderController::class, 'show']);
+$router->add('POST', 'admin/orders/update-status-ajax', [\App\Controllers\Admin\OrderController::class, 'updateStatusAjax']);
 
 $url = $_GET['url'] ?? '';
 $method = $_SERVER['REQUEST_METHOD'];
 
-$router->dispatch($url, $method);
+try {
+    $router->dispatch($url, $method);
+} catch (\Throwable $e) {
+    if (ob_get_length()) {
+        ob_clean();
+    }
+
+    $logDir = __DIR__ . '/../storage/logs';
+    if (!is_dir($logDir)) {
+        mkdir($logDir, 0777, true);
+    }
+    error_log($e->getMessage() . "\n" . $e->getTraceAsString());
+
+    $response = new \App\Core\Response();
+
+    $html = "<!DOCTYPE html><html lang='uk'><head><meta charset='UTF-8'><title>500 Внутрішня помилка сервера</title></head><body style='background:#0b0f19; color:#f8fafc; font-family:system-ui, sans-serif; text-align:center; padding-top:100px;'><h1 style='color:#ef4444; font-size:64px; margin-bottom:10px;'>500</h1><h2 style='font-size:24px; margin-bottom:15px;'>Внутрішня помилка сервера</h2><p style='color:#94a3b8; max-width:500px; margin:0 auto 30px auto; line-height:1.6;'>Сталася непередбачувана аномалія в системі розрахунків. Наші інженери вже усувають несправність.</p><a href='/coursework/' style='display:inline-block; background:#2563eb; color:#fff; text-decoration:none; padding:12px 24px; font-weight:600; border-radius:8px;'>&larr; Повернутися на головну</a></body></html>";
+
+    if ($config['env'] === 'dev') {
+        $html .= "<pre style='text-align:left; max-width:800px; margin:20px auto; background:#161f33; padding:20px; border-radius:8px; color:#ef4444; overflow-x:auto;'>" . htmlspecialchars($e->getMessage()) . "\n" . htmlspecialchars($e->getTraceAsString()) . "</pre>";
+    }
+
+    $response->setStatus(500)
+        ->addHeader('Content-Type: text/html; charset=utf-8')
+        ->send($html);
+}

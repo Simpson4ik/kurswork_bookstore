@@ -7,27 +7,40 @@ use PDOException;
 
 class Database
 {
-    private static $instance = null;
-    private $connection;
+    private static ?Database $instance = null;
+    private PDO $connection;
 
     private function __construct()
     {
-        $config = require __DIR__ . '/../../config/database.php';
-
-        $dsn = "mysql:host={$config['host']};dbname={$config['dbname']};charset={$config['charset']}";
+        $config = require __DIR__ . '/../../config/app.php';
 
         try {
-            $this->connection = new PDO($dsn, $config['username'], $config['password'], [
+            $dsn = sprintf(
+                "mysql:host=%s;dbname=%s;charset=%s",
+                $config['db']['host'],
+                $config['db']['dbname'],
+                $config['db']['charset']
+            );
+
+            $this->connection = new PDO($dsn, $config['db']['username'], $config['db']['password'], [
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
                 PDO::ATTR_EMULATE_PREPARES => false,
             ]);
         } catch (PDOException $e) {
-            die("Database connection failed: " . $e->getMessage());
+            if (isset($config['env']) && $config['env'] === 'dev') {
+                die("Database connection failed: " . $e->getMessage());
+            } else {
+                $response = new Response();
+                $response->setStatus(500)->send("<h2>Помилка системи</h2><p>Технічні неполадки на лінії зв'язку з базою даних. Спробуйте пізніше.</p>");
+                exit;
+            }
         }
     }
 
-    public static function getInstance()
+    private function __clone() {}
+
+    public static function getInstance(): Database
     {
         if (self::$instance === null) {
             self::$instance = new self();
@@ -35,7 +48,7 @@ class Database
         return self::$instance;
     }
 
-    public function getConnection()
+    public function getConnection(): PDO
     {
         return $this->connection;
     }

@@ -5,6 +5,8 @@ namespace App\Controllers;
 use App\Core\Controller;
 use App\Models\Book;
 use App\Models\Cart;
+use App\Models\Customer;
+use App\Models\Order;
 
 class CartController extends Controller
 {
@@ -27,10 +29,17 @@ class CartController extends Controller
             }
         }
 
+        $userData = null;
+        if (isset($_SESSION['user'])) {
+            $customerModel = new Customer();
+            $userData = $customerModel->getById((int)$_SESSION['user']['id']);
+        }
+
         $this->view('cart', [
             'title' => 'Мій кошик',
             'cartItems' => $cartItems,
-            'totalPrice' => $totalPrice
+            'totalPrice' => $totalPrice,
+            'user' => $userData
         ]);
     }
 
@@ -76,6 +85,11 @@ class CartController extends Controller
 
     public function checkout(): void
     {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: /coursework/cart');
+            exit;
+        }
+
         if (!isset($_SESSION['user']) || !isset($_SESSION['user']['id'])) {
             header('Location: /coursework/login');
             exit;
@@ -85,6 +99,28 @@ class CartController extends Controller
         if (empty($cart)) {
             header('Location: /coursework/cart');
             exit;
+        }
+
+        $firstName = isset($_POST['first_name']) ? trim($_POST['first_name']) : '';
+        $lastName = isset($_POST['last_name']) ? trim($_POST['last_name']) : '';
+        $phone = isset($_POST['phone']) ? trim($_POST['phone']) : '';
+
+        if (empty($firstName) || empty($lastName) || empty($phone)) {
+            die("Помилка: Заповніть усі обов'язкові поля форми доставки.");
+        }
+
+        $customerId = (int)$_SESSION['user']['id'];
+        $customerModel = new Customer();
+        $userRow = $customerModel->getById($customerId);
+
+        if ($userRow) {
+            $customerModel->updateProfile($customerId, [
+                'first_name' => $firstName,
+                'last_name' => $lastName,
+                'phone' => $phone,
+                'email' => $userRow['email']
+            ]);
+            $_SESSION['user']['name'] = $firstName;
         }
 
         $bookModel = new Book();
@@ -100,12 +136,11 @@ class CartController extends Controller
             }
         }
 
-        $orderModel = new \App\Models\Order();
-        $customerId = $_SESSION['user']['id'];
+        $orderModel = new Order();
 
         if ($orderModel->saveOrder($customerId, $cartItems, $totalPrice)) {
             $cartModel = new Cart();
-            $cartModel->clear((int)$customerId);
+            $cartModel->clear($customerId);
 
             unset($_SESSION['cart']);
             $this->view('order_success', ['title' => 'Замовлення оформлено!']);
@@ -117,6 +152,7 @@ class CartController extends Controller
 
     public function addAjax(): void
     {
+        //(throw new \Exception("Критичний збій бази даних кошика");
         $response = new \App\Core\Response();
         $input = json_decode(file_get_contents('php://input'), true);
         $bookId = isset($input['book_id']) ? (int)$input['book_id'] : 0;

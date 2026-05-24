@@ -2,6 +2,7 @@
 /** @var string $title */
 /** @var array $cartItems */
 /** @var float $totalPrice */
+/** @var array|null $user */
 ?>
 <h2><?php echo $title; ?></h2>
 
@@ -34,7 +35,7 @@
                     </td>
                     <td id="subtotal-<?php echo $item['book_id']; ?>"><?php echo $item['subtotal']; ?> грн</td>
                     <td>
-                        <a href="/coursework/cart/remove/<?php echo $item['book_id']; ?>" style="color: red;">Видалити</a>
+                        <a href="/coursework/cart/remove/<?php echo $item['book_id']; ?>" class="btn-remove-item" data-book-id="<?php echo $item['book_id']; ?>" style="color: red; text-decoration: none;">Видалити</a>
                     </td>
                 </tr>
             <?php endforeach; ?>
@@ -43,13 +44,40 @@
 
         <h3>Загальна вартість: <span id="grand-total"><?php echo $totalPrice; ?> грн</span></h3>
 
-        <a href="/coursework/cart/checkout">
-            <button type="button" style="background: var(--success); color: white; padding: 10px 20px; font-size: 16px; border: none; cursor: pointer; width: auto; margin-top: 10px;">
-                🚀 Оформити замовлення
-            </button>
-        </a>
+        <?php if (isset($_SESSION['user'])): ?>
+            <form action="/coursework/cart/checkout" method="POST" style="max-width: 100%; margin-top: 30px; padding: 25px;">
+                <h3 style="color: var(--neon-glow); margin-top: 0; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px;">📋 Дані для відправки замовлення</h3>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div>
+                        <label for="first_name">Ім'я</label>
+                        <input type="text" id="first_name" name="first_name" value="<?php echo htmlspecialchars($user['first_name'] ?? ''); ?>" required>
+                    </div>
+                    <div>
+                        <label for="last_name">Прізвище</label>
+                        <input type="text" id="last_name" name="last_name" value="<?php echo htmlspecialchars($user['last_name'] ?? ''); ?>" required>
+                    </div>
+                </div>
+
+                <div>
+                    <label for="phone">Номер телефону</label>
+                    <input type="text" id="phone" name="phone" placeholder="+380XXXXXXXXX" value="<?php echo htmlspecialchars($user['phone'] ?? ''); ?>" required>
+                </div>
+
+                <button type="submit" style="background: var(--success); color: white; padding: 12px 25px; font-size: 16px; border: none; cursor: pointer; width: auto; margin-top: 15px;">
+                    🚀 Підтвердити та оформити замовлення
+                </button>
+            </form>
+        <?php else: ?>
+            <div style="background-color: var(--panel-galaxy); border: 1px solid var(--border); padding: 20px; border-radius: var(--radius); margin-top: 30px; text-align: center;">
+                <p style="color: var(--text-muted); margin-bottom: 15px;">Для оформлення замовлення необхідно увійти до свого облікового запису.</p>
+                <a href="/coursework/login" class="page-link" style="display: inline-block; margin-right: 10px;">🔑 Вхід</a>
+                <a href="/coursework/register" class="page-link" style="display: inline-block;">📝 Реєстрація</a>
+            </div>
+        <?php endif; ?>
+
     <?php else: ?>
-        <p>Ваш кошик порожній.</p>
+        <p style="color: var(--text-muted);">Ваш кошик порожній.</p>
     <?php endif; ?>
 </div>
 
@@ -86,7 +114,7 @@
                             document.getElementById('grand-total').innerText = data.total_price;
 
                             if (data.cart_empty) {
-                                document.getElementById('cart-container').innerHTML = '<p>Ваш кошик порожній.</p>';
+                                document.getElementById('cart-container').innerHTML = '<p style="color: var(--text-muted);">Ваш кошик порожній.</p>';
                             }
                         } else {
                             alert('Помилка оновлення: ' + data.message);
