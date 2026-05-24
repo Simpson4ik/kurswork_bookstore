@@ -4,7 +4,6 @@ namespace App\Core;
 
 abstract class Controller
 {
-    // Задаємо макет за замовчуванням
     protected string $layout = 'layouts/main';
 
     protected function view(string $view, array $data = []): void
@@ -31,5 +30,17 @@ abstract class Controller
         } else {
             echo $content;
         }
+    }
+    public function redirect(string $url): void
+    {
+        if (ob_get_length()) {
+            ob_clean();
+        }
+        $base = defined('BASE_PATH') ? BASE_PATH : '';
+
+        $url = ltrim($url, '/');
+
+        header("Location: {$base}/{$url}");
+        exit;
     }
 }

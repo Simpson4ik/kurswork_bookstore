@@ -22,7 +22,6 @@ class AuthorController extends AdminController
             $authorModel->create($_POST);
         }
 
-        header('Location: /coursework/admin/authors');
-        exit;
+        $this->redirect('admin/authors');
     }
 }

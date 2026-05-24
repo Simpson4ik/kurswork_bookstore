@@ -62,8 +62,7 @@ class CartController extends Controller
             $cartModel->saveItem((int)$_SESSION['user']['id'], $bookId, $_SESSION['cart'][$bookId]);
         }
 
-        header('Location: /coursework/cart');
-        exit;
+        $this->redirect('cart');
     }
 
     public function remove(string $id): void
@@ -78,27 +77,22 @@ class CartController extends Controller
             $cartModel = new Cart();
             $cartModel->removeItem((int)$_SESSION['user']['id'], $bookId);
         }
-
-        header('Location: /coursework/cart');
-        exit;
+        $this->redirect('orders');
     }
 
     public function checkout(): void
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: /coursework/cart');
-            exit;
+            $this->redirect('cart');
         }
 
         if (!isset($_SESSION['user']) || !isset($_SESSION['user']['id'])) {
-            header('Location: /coursework/login');
-            exit;
+            $this->redirect('login');
         }
 
         $cart = $_SESSION['cart'] ?? [];
         if (empty($cart)) {
-            header('Location: /coursework/cart');
-            exit;
+            $this->redirect('cart');
         }
 
         $firstName = isset($_POST['first_name']) ? trim($_POST['first_name']) : '';
@@ -152,7 +146,6 @@ class CartController extends Controller
 
     public function addAjax(): void
     {
-        //(throw new \Exception("Критичний збій бази даних кошика");
         $response = new \App\Core\Response();
         $input = json_decode(file_get_contents('php://input'), true);
         $bookId = isset($input['book_id']) ? (int)$input['book_id'] : 0;

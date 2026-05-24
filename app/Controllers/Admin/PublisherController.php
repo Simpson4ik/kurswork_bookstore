@@ -24,7 +24,6 @@ class PublisherController extends AdminController
             $publisherModel->create(trim($_POST['publisher_name']));
         }
 
-        header('Location: /coursework/admin/publishers');
-        exit;
+        $this->redirect('admin/publishers');
     }
 }

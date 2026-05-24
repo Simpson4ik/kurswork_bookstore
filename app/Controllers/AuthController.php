@@ -19,12 +19,13 @@ class AuthController extends Controller
 
             if ($customerModel->getByEmail($_POST['email'])) {
                 $response = new \App\Core\Response();
-                $response->setStatus(400)->send("<h2>Помилка реєстрації</h2><p>Користувач з такою поштою вже існує в системі.</p><p><a href='/coursework/register'>Назад</a></p>");
+                $base = defined('BASE_PATH') ? BASE_PATH : '';
+
+                $response->setStatus(400)->send("<h2>Помилка реєстрації</h2><p>Користувач з такою поштою вже існує в системі.</p><p><a href='{$base}/register' style='color:#2563eb; text-decoration:none; font-weight:bold;'>&larr; Назад</a></p>");
             }
 
             $customerModel->create($_POST);
-            header('Location: /coursework/login');
-            exit;
+            $this->redirect('login');
         }
     }
 
@@ -49,18 +50,23 @@ class AuthController extends Controller
                 if (isset($_POST['remember'])) {
                     $token = bin2hex(random_bytes(32));
                     $customerModel->updateRememberToken($user['customer_id'], $token);
-                    setcookie('remember_me', $token, time() + (30 * 24 * 60 * 60), '/', '', false, true);
+
+                    // Налаштовуємо кукі відповідно до підпапки розгортання сайту
+                    $cookiePath = defined('BASE_PATH') && BASE_PATH !== '' ? BASE_PATH : '/';
+                    setcookie('remember_me', $token, time() + (30 * 24 * 60 * 60), $cookiePath, '', false, true);
                 }
 
                 if ($user['role'] === 'admin') {
-                    header('Location: /coursework/admin/dashboard');
+                    $this->redirect('admin/dashboard');
                 } else {
-                    header('Location: /coursework/');
+                    $this->redirect('');
                 }
-                exit;
             }
+
             $response = new \App\Core\Response();
-            $response->setStatus(401)->send("<h2>Помилка входу</h2><p>Неправильний email або пароль.</p><p><a href='/coursework/login'>Спробувати знову</a></p>");
+            $base = defined('BASE_PATH') ? BASE_PATH : '';
+
+            $response->setStatus(401)->send("<h2>Помилка входу</h2><p>Неправильний email або пароль.</p><p><a href='{$base}/login' style='color:#2563eb; text-decoration:none; font-weight:bold;'>Спробувати знову &rarr;</a></p>");
         }
     }
 
@@ -72,13 +78,13 @@ class AuthController extends Controller
         }
 
         if (isset($_COOKIE['remember_me'])) {
-            setcookie('remember_me', '', time() - 3600, '/');
+            $cookiePath = defined('BASE_PATH') && BASE_PATH !== '' ? BASE_PATH : '/';
+            setcookie('remember_me', '', time() - 3600, $cookiePath);
         }
 
         unset($_SESSION['user']);
         session_destroy();
-        header('Location: /coursework/');
-        exit;
+        $this->redirect('login');
     }
 
     public function checkEmailAjax(): void

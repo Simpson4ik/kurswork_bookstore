@@ -153,8 +153,7 @@ class BookController extends AdminController
             $bookModel->delete($bookId);
         }
 
-        header('Location: /coursework/admin/dashboard');
-        exit;
+        $this->redirect('admin/dashboard');
     }
 
     private function uploadAndConvertToWebp(array $file): ?string

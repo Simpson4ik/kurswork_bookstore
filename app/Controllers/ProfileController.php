@@ -12,8 +12,7 @@ class ProfileController extends Controller
     public function index(): void
     {
         if (!isset($_SESSION['user'])) {
-            header('Location: /coursework/login');
-            exit;
+            $this->redirect('login');
         }
 
         $customerModel = new Customer();
@@ -28,8 +27,7 @@ class ProfileController extends Controller
     public function orders(): void
     {
         if (!isset($_SESSION['user'])) {
-            header('Location: /coursework/login');
-            exit;
+            $this->redirect('login');
         }
 
         $orderModel = new Order();

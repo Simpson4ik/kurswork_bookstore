@@ -21,7 +21,6 @@ class GenreController extends AdminController
             $genreModel = new Genre();
             $genreModel->create(trim($_POST['genre_name']));
         }
-        header('Location: /coursework/admin/genres');
-        exit;
+        $this->redirect('admin/genres');
     }
 }
