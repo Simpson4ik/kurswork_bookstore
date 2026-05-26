@@ -3,6 +3,7 @@
 namespace App\Controllers\Admin;
 
 use App\Models\Author;
+use App\Core\Response;
 
 class AuthorController extends AdminController
 {
@@ -23,5 +24,19 @@ class AuthorController extends AdminController
         }
 
         $this->redirect('admin/authors');
+    }
+
+    public function delete(string $id): void
+    {
+        $response = new Response();
+        $authorId = (int)$id;
+        $authorModel = new Author();
+
+        try {
+            $authorModel->delete($authorId);
+            $response->json(['success' => true, 'message' => 'Автора успішно видалено з бази даних.']);
+        } catch (\Exception $e) {
+            $response->json(['success' => false, 'message' => 'Неможливо видалити автора. Він прив’язаний до існуючих книг у каталозі.'], 400);
+        }
     }
 }

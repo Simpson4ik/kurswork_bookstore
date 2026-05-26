@@ -157,4 +157,9 @@ class Order extends Model
             return false;
         }
     }
+    public function getTotalRevenue(): float
+    {
+        $statement = $this->db->query("SELECT SUM(total_amount) FROM orders WHERE status != 'Скасовано'");
+        return (float)$statement->fetchColumn();
+    }
 }

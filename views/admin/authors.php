@@ -26,14 +26,21 @@
         <th>ID</th>
         <th>Автор (Прізвище та Ім'я)</th>
         <th>Біографія</th>
+        <th>Дії</th>
     </tr>
     </thead>
     <tbody>
     <?php foreach ($authors as $author): ?>
-        <tr>
+        <tr id="author-row-<?php echo htmlspecialchars($author['author_id']); ?>">
             <td><?php echo htmlspecialchars($author['author_id']); ?></td>
             <td><strong><?php echo htmlspecialchars($author['last_name'] . ' ' . $author['first_name']); ?></strong></td>
             <td><?php echo htmlspecialchars($author['biography'] ?? '—'); ?></td>
+            <td>
+                <a href="<?php echo defined('BASE_PATH') ? BASE_PATH : ''; ?>/admin/author/delete/<?php echo htmlspecialchars($author['author_id']); ?>"
+                   class="btn-delete-author"
+                   data-author-id="<?php echo htmlspecialchars($author['author_id']); ?>"
+                   style="color: var(--danger); text-decoration: none; font-weight: bold;">Видалити</a>
+            </td>
         </tr>
     <?php endforeach; ?>
     </tbody>

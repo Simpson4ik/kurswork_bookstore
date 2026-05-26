@@ -67,4 +67,11 @@ class Customer extends Model
             $id
         ]);
     }
+
+    public function getTotalCount(): int
+    {
+        $statement = $this->db->query("SELECT COUNT(*) FROM customers WHERE role = 'customer' OR role IS NULL");
+        return (int)$statement->fetchColumn();
+    }
+
 }

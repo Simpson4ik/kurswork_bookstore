@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        addButton.innerText = '✅ Додано!';
+                        addButton.innerText = ' Додано!';
                         addButton.style.backgroundColor = 'var(--success)';
                         setTimeout(() => {
                             addButton.innerText = originalText;
@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 })
                 .catch(error => {
-                    console.error('Помилка мережі:', error);
+                    console.error(error);
                     addButton.innerText = originalText;
                     addButton.disabled = false;
                 });
@@ -76,7 +76,96 @@ document.addEventListener('DOMContentLoaded', function() {
                         }, 300);
                     }
                 })
-                .catch(error => console.error('Помилка мережі:', error));
+                .catch(error => console.error(error));
+            return;
+        }
+
+        const deleteBookButton = e.target.closest('.btn-delete-book');
+        if (deleteBookButton) {
+            e.preventDefault();
+            const bookId = deleteBookButton.getAttribute('data-book-id');
+            const row = document.getElementById(`book-row-${bookId}`);
+            const deleteUrl = deleteBookButton.getAttribute('href');
+
+            fetch(deleteUrl)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        if (row) {
+                            row.style.transition = 'opacity 0.3s';
+                            row.style.opacity = '0';
+                            setTimeout(() => row.remove(), 300);
+                        }
+                    } else {
+                        alert('Помилка: ' + data.message);
+                    }
+                })
+                .catch(error => console.error(error));
+            return;
+        }
+
+        const deleteAuthorButton = e.target.closest('.btn-delete-author');
+        if (deleteAuthorButton) {
+            e.preventDefault();
+            const id = deleteAuthorButton.getAttribute('data-author-id');
+            const row = document.getElementById(`author-row-${id}`);
+            const url = deleteAuthorButton.getAttribute('href');
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    if (data.success && row) {
+                        row.style.transition = 'opacity 0.3s';
+                        row.style.opacity = '0';
+                        setTimeout(() => row.remove(), 300);
+                    }
+                })
+                .catch(error => console.error(error));
+            return;
+        }
+
+        const deleteGenreButton = e.target.closest('.btn-delete-genre');
+        if (deleteGenreButton) {
+            e.preventDefault();
+            const id = deleteGenreButton.getAttribute('data-genre-id');
+            const row = document.getElementById(`genre-row-${id}`);
+            const url = deleteGenreButton.getAttribute('href');
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    if (data.success && row) {
+                        row.style.transition = 'opacity 0.3s';
+                        row.style.opacity = '0';
+                        setTimeout(() => row.remove(), 300);
+                    }
+                })
+                .catch(error => console.error(error));
+            return;
+        }
+
+        const deletePublisherButton = e.target.closest('.btn-delete-publisher');
+        if (deletePublisherButton) {
+            e.preventDefault();
+            const id = deletePublisherButton.getAttribute('data-publisher-id');
+            const row = document.getElementById(`publisher-row-${id}`);
+            const url = deletePublisherButton.getAttribute('href');
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    if (data.success && row) {
+                        row.style.transition = 'opacity 0.3s';
+                        row.style.opacity = '0';
+                        setTimeout(() => row.remove(), 300);
+                    }
+                })
+                .catch(error => console.error(error));
+            return;
         }
     });
 
@@ -108,7 +197,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         alert('Помилка оновлення: ' + data.message);
                     }
                 })
-                .catch(error => console.error('Помилка мережі:', error));
+                .catch(error => console.error(error));
             return;
         }
 
@@ -131,36 +220,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         alert('Помилка: ' + data.message);
                     }
                 })
-                .catch(error => console.error('Помилка мережі:', error));
+                .catch(error => console.error(error));
         }
     });
 
-    const deleteBookButton = e.target.closest('.btn-delete-book');
-    if (deleteBookButton) {
-        e.preventDefault();
-        if (!confirm('Ви впевнені, що хочете повністю видалити цю книгу з каталогу?')) return;
-
-        const bookId = deleteBookButton.getAttribute('data-book-id');
-        const row = document.getElementById(`book-row-${bookId}`);
-        const deleteUrl = deleteBookButton.getAttribute('href');
-
-        fetch(deleteUrl)
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert(data.message);
-                    if (row) {
-                        row.style.transition = 'opacity 0.3s';
-                        row.style.opacity = '0';
-                        setTimeout(() => row.remove(), 300);
-                    }
-                } else {
-                    alert('Помилка: ' + data.message);
-                }
-            })
-            .catch(error => console.error('Помилка мережі:', error));
-        return;
-    }
     const emailInput = document.getElementById('email');
     const emailError = document.getElementById('email-error');
     const submitBtn = document.getElementById('btn-register');
@@ -186,14 +249,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     isEmailChecking = false;
                     if (data.success) {
                         if (data.exists) {
-                            emailError.innerText = '❌ Цей Email вже зареєстрований в системі!';
+                            emailError.innerText = ' Цей Email вже зареєстрований в системі!';
                             emailError.style.color = 'var(--danger)';
                             this.style.borderColor = 'var(--danger)';
                             submitBtn.disabled = true;
                             submitBtn.style.opacity = '0.5';
                             submitBtn.style.cursor = 'not-allowed';
                         } else {
-                            emailError.innerText = '✅ Цей Email вільний';
+                            emailError.innerText = ' Цей Email вільний';
                             emailError.style.color = 'var(--success)';
                             this.style.borderColor = 'var(--success)';
                             submitBtn.disabled = false;
@@ -204,7 +267,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 })
                 .catch(error => {
                     isEmailChecking = false;
-                    console.error('Помилка мережі:', error);
+                    console.error(error);
                 });
         });
 
@@ -249,7 +312,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         alert('Помилка: ' + data.message);
                     }
                 })
-                .catch(error => console.error('Помилка мережі:', error));
+                .catch(error => console.error(error));
         });
     }
 
@@ -272,10 +335,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         alert('Помилка: ' + data.message);
                     }
                 })
-                .catch(error => console.error('Помилка мережі:', error));
+                .catch(error => console.error(error));
         });
     }
-
 
     function initTagDropdownSystem(inputId, containerListId, badgesContainerId, checkboxClass) {
         const input = document.getElementById(inputId);
@@ -408,11 +470,11 @@ document.addEventListener('DOMContentLoaded', function() {
             }, delay);
         };
     }
+
     const catalogSearch = document.getElementById('catalog-live-search');
     const minPriceInput = document.getElementById('filter-min-price');
     const maxPriceInput = document.getElementById('filter-max-price');
     const inStockCheckbox = document.getElementById('filter-in-stock');
-
     const booksGrid = document.querySelector('.books-grid');
     const pagination = document.querySelector('.pagination');
 
@@ -446,7 +508,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
             })
-            .catch(error => console.error('Помилка фільтрації каталогу:', error));
+            .catch(error => console.error(error));
     }
 
     const debouncedFilter = debounce(triggerFilters, 350);
@@ -454,7 +516,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (catalogSearch) catalogSearch.addEventListener('input', debouncedFilter);
     if (minPriceInput) minPriceInput.addEventListener('input', debouncedFilter);
     if (maxPriceInput) maxPriceInput.addEventListener('input', debouncedFilter);
-
     if (inStockCheckbox) inStockCheckbox.addEventListener('change', triggerFilters);
 
     const genreContainerList = document.querySelector('.catalog-sidebar');
@@ -497,9 +558,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 <p>Рік видання: ${escapeHtml(book.publication_year)}</p>
                 <p>Ціна: ${escapeHtml(book.price)} грн</p>
                 <p>В наявності: ${escapeHtml(book.stock_quantity)} шт.</p>
-                <button type="button" class="btn-add-to-cart" data-book-id="${book.book_id}">
-                    Додати в кошик
-                </button>
+                ${parseInt(book.stock_quantity) > 0
+                ? `<button type="button" class="btn-add-to-cart" data-book-id="${book.book_id}">Додати в кошик</button>`
+                : `<button type="button" disabled style="background-color: var(--border); color: var(--text-muted); cursor: not-allowed; box-shadow: none;">Немає в наявності</button>`
+            }
             `;
             booksGrid.appendChild(li);
         });
@@ -524,7 +586,7 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
 
             const originalBtnText = saveProfileBtn.innerText;
-            saveProfileBtn.innerText = '⏳ Синхронізація...';
+            saveProfileBtn.innerText = ' Синхронізація...';
             saveProfileBtn.disabled = true;
             profileStatus.innerText = '';
 
@@ -559,10 +621,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 })
                 .catch(error => {
-                    console.error('Помилка мережі:', error);
+                    console.error(error);
                     saveProfileBtn.innerText = originalBtnText;
                     saveProfileBtn.disabled = false;
-                    profileStatus.innerText = '❌ Сталася помилка мережевого з\'єднання.';
+                    profileStatus.innerText = ' Сталася помилка мережевого з\'єднання.';
                     profileStatus.style.color = 'var(--danger)';
                 });
         });

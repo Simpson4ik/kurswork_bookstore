@@ -16,7 +16,7 @@
         <a href="<?php echo defined('BASE_PATH') ? BASE_PATH : ''; ?>/">📋 Каталог</a>
         <a href="<?php echo defined('BASE_PATH') ? BASE_PATH : ''; ?>/cart">🛒 Кошик</a>
         <?php if (isset($_SESSION['user'])): ?>
-            <a href="<?php echo defined('BASE_PATH') ? BASE_PATH : ''; ?>/orders">📦 Замовлення</a>
+
             <?php if ($_SESSION['user']['role'] === 'admin'): ?>
                 <a href="<?php echo defined('BASE_PATH') ? BASE_PATH : ''; ?>/admin/dashboard" class="admin-link">👨‍💻 Admin-панель</a>
             <?php endif; ?>

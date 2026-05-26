@@ -73,9 +73,15 @@
                         <p>Рік видання: <?php echo htmlspecialchars($book['publication_year']); ?></p>
                         <p>Ціна: <span class="book-card-price"><?php echo htmlspecialchars($book['price']); ?> грн</span></p>
                         <p>В наявності: <?php echo htmlspecialchars($book['stock_quantity']); ?> шт.</p>
-                        <button type="button" class="btn-add-to-cart" data-book-id="<?php echo $book['book_id']; ?>">
-                            Додати в кошик
-                        </button>
+                        <?php if ($book['stock_quantity'] > 0): ?>
+                            <button type="button" class="btn-add-to-cart" data-book-id="<?php echo $book['book_id']; ?>">
+                                Додати в кошик
+                            </button>
+                        <?php else: ?>
+                            <button type="button" disabled style="background-color: var(--border); color: var(--text-muted); cursor: not-allowed; box-shadow: none;">
+                                Немає в наявності
+                            </button>
+                        <?php endif; ?>
                     </li>
                 <?php endforeach; ?>
             </ul>

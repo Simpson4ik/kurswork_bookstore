@@ -25,4 +25,10 @@ class Author extends Model
             !empty(trim($data['biography'])) ? trim($data['biography']) : null
         ]);
     }
+
+    public function delete(int $id): bool
+    {
+        $statement = $this->db->prepare("DELETE FROM authors WHERE author_id = ?");
+        return $statement->execute([$id]);
+    }
 }

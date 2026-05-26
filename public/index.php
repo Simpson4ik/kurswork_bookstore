@@ -129,7 +129,9 @@ $router->add('POST', 'profile/update-ajax', [\App\Controllers\ProfileController:
 $router->add('GET', 'admin/orders', [\App\Controllers\Admin\OrderController::class, 'index']);
 $router->add('GET', 'admin/orders/view/{id}', [\App\Controllers\Admin\OrderController::class, 'show']);
 $router->add('POST', 'admin/orders/update-status-ajax', [\App\Controllers\Admin\OrderController::class, 'updateStatusAjax']);
-
+$router->add('GET', 'admin/author/delete/{id}', [\App\Controllers\Admin\AuthorController::class, 'delete']);
+$router->add('GET', 'admin/genre/delete/{id}', [\App\Controllers\Admin\GenreController::class, 'delete']);
+$router->add('GET', 'admin/publisher/delete/{id}', [\App\Controllers\Admin\PublisherController::class, 'delete']);
 $url = $_GET['url'] ?? '';
 $method = $_SERVER['REQUEST_METHOD'];
 

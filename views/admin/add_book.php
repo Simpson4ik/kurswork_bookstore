@@ -16,6 +16,10 @@
         <input type="text" id="isbn" name="isbn" required>
     </div>
     <div>
+        <label for="description">Опис книги:</label>
+        <textarea id="description" name="description" rows="5" placeholder="Короткий опис або анотація книги..." style="resize: vertical;"></textarea>
+    </div>
+    <div>
         <label for="publication_year">Рік видання:</label>
         <input type="number" id="publication_year" name="publication_year" required>
     </div>

@@ -19,6 +19,10 @@
         <input type="text" id="isbn" name="isbn" value="<?php echo htmlspecialchars($book['isbn']); ?>" required>
     </div>
     <div>
+        <label for="description">Опис книги:</label>
+        <textarea id="description" name="description" rows="5" style="resize: vertical;"><?php echo htmlspecialchars($book['description'] ?? ''); ?></textarea>
+    </div>
+    <div>
         <label for="publication_year">Рік видання:</label>
         <input type="number" id="publication_year" name="publication_year" value="<?php echo htmlspecialchars($book['publication_year']); ?>" required>
     </div>

@@ -19,13 +19,41 @@ class CartController extends Controller
 
         if (!empty($cart)) {
             $bookModel = new Book();
+            $cartModel = new Cart();
+            $customerId = isset($_SESSION['user']) ? (int)$_SESSION['user']['id'] : 0;
+
             foreach ($cart as $bookId => $quantity) {
                 $book = $bookModel->getById((int)$bookId);
+
                 if ($book) {
-                    $book['quantity'] = $quantity;
-                    $book['subtotal'] = $book['price'] * $quantity;
-                    $totalPrice += $book['subtotal'];
-                    $cartItems[] = $book;
+                    // FIX 1: Жорстке обмеження кількості (не більше, ніж зараз є на складі)
+                    if ($quantity > $book['stock_quantity']) {
+                        $quantity = $book['stock_quantity'];
+                        $_SESSION['cart'][$bookId] = $quantity;
+                        if ($customerId > 0) {
+                            $cartModel->saveItem($customerId, $bookId, $quantity);
+                        }
+                    }
+
+                    // Додаємо до кошика на вивід тільки якщо товару > 0
+                    if ($quantity > 0) {
+                        $book['quantity'] = $quantity;
+                        $book['subtotal'] = $book['price'] * $quantity;
+                        $totalPrice += $book['subtotal'];
+                        $cartItems[] = $book;
+                    } else {
+                        // Товар закінчився - видаляємо з кошика
+                        unset($_SESSION['cart'][$bookId]);
+                        if ($customerId > 0) {
+                            $cartModel->removeItem($customerId, $bookId);
+                        }
+                    }
+                } else {
+                    // FIX 2: Книгу було видалено з каталогу - повністю прибираємо її з кошика
+                    unset($_SESSION['cart'][$bookId]);
+                    if ($customerId > 0) {
+                        $cartModel->removeItem($customerId, $bookId);
+                    }
                 }
             }
         }
@@ -68,17 +96,34 @@ class CartController extends Controller
         $userRow = $customerModel->getById($customerId);
 
         $bookModel = new Book();
+        $cartModel = new Cart();
         $cartItems = [];
         $totalPrice = 0;
 
         foreach ($cart as $bookId => $quantity) {
             $book = $bookModel->getById((int)$bookId);
+
             if ($book) {
-                $book['quantity'] = $quantity;
-                $book['subtotal'] = $book['price'] * $quantity;
-                $totalPrice += $book['subtotal'];
-                $cartItems[] = $book;
+                if ($quantity > $book['stock_quantity']) {
+                    $quantity = $book['stock_quantity'];
+                }
+
+                if ($quantity > 0) {
+                    $book['quantity'] = $quantity;
+                    $book['subtotal'] = $book['price'] * $quantity;
+                    $totalPrice += $book['subtotal'];
+                    $cartItems[] = $book;
+                }
+            } else {
+                // Якщо книгу видалили прямо під час оформлення
+                unset($_SESSION['cart'][$bookId]);
+                $cartModel->removeItem($customerId, $bookId);
             }
+        }
+
+        if (empty($cartItems)) {
+            $this->redirect('cart');
+            return;
         }
 
         if (empty($firstName) || empty($lastName) || empty($phone)) {
@@ -106,9 +151,7 @@ class CartController extends Controller
         $orderModel = new Order();
 
         if ($orderModel->saveOrder($customerId, $cartItems, $totalPrice)) {
-            $cartModel = new Cart();
             $cartModel->clear($customerId);
-
             unset($_SESSION['cart']);
             $this->view('order_success', ['title' => 'Замовлення оформлено!']);
         } else {

@@ -64,14 +64,15 @@ class Book extends Model
     public function create(array $data): int
     {
         $statement = $this->db->prepare("
-            INSERT INTO books (title, publisher_id, publication_year, isbn, price, stock_quantity, cover_image) 
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO books (title, publisher_id, publication_year, isbn, description, price, stock_quantity, cover_image) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         ");
         $statement->execute([
             $data['title'],
             $data['publisher_id'],
             $data['publication_year'],
             $data['isbn'],
+            $data['description'] ?? null,
             $data['price'],
             $data['stock_quantity'],
             $data['cover_image'] ?? null
@@ -83,7 +84,7 @@ class Book extends Model
     {
         $statement = $this->db->prepare("
             UPDATE books 
-            SET title = ?, publisher_id = ?, publication_year = ?, isbn = ?, price = ?, stock_quantity = ?, cover_image = ? 
+            SET title = ?, publisher_id = ?, publication_year = ?, isbn = ?, description = ?, price = ?, stock_quantity = ?, cover_image = ? 
             WHERE book_id = ?
         ");
         return $statement->execute([
@@ -91,6 +92,7 @@ class Book extends Model
             $data['publisher_id'],
             $data['publication_year'],
             $data['isbn'],
+            $data['description'] ?? null,
             $data['price'],
             $data['stock_quantity'],
             $data['cover_image'],
@@ -106,16 +108,9 @@ class Book extends Model
 
     public function attachAuthors(int $bookId, array $authorIds): void
     {
-        $this->db->beginTransaction();
-        try {
-            $statement = $this->db->prepare("INSERT INTO book_authors (book_id, author_id) VALUES (?, ?)");
-            foreach ($authorIds as $authorId) {
-                $statement->execute([$bookId, (int)$authorId]);
-            }
-            $this->db->commit();
-        } catch (\Throwable $e) {
-            $this->db->rollBack();
-            throw $e;
+        $statement = $this->db->prepare("INSERT INTO book_authors (book_id, author_id) VALUES (?, ?)");
+        foreach ($authorIds as $authorId) {
+            $statement->execute([$bookId, (int)$authorId]);
         }
     }
 
@@ -127,16 +122,9 @@ class Book extends Model
 
     public function attachGenres(int $bookId, array $genreIds): void
     {
-        $this->db->beginTransaction();
-        try {
-            $statement = $this->db->prepare("INSERT INTO book_genres (book_id, genre_id) VALUES (?, ?)");
-            foreach ($genreIds as $genreId) {
-                $statement->execute([$bookId, (int)$genreId]);
-            }
-            $this->db->commit();
-        } catch (\Throwable $e) {
-            $this->db->rollBack();
-            throw $e;
+        $statement = $this->db->prepare("INSERT INTO book_genres (book_id, genre_id) VALUES (?, ?)");
+        foreach ($genreIds as $genreId) {
+            $statement->execute([$bookId, (int)$genreId]);
         }
     }
 
